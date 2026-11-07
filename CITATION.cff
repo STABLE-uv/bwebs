@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use bwebs, please cite it as below."
+type: software
+title: "bwebs: Bayesian Food Webs from Compiled Trophic Interactions"
+version: 0.2.0
+license: MIT
+repository-code: "https://github.com/STABLE-uv/bwebs"
+authors:
+  - family-names: "Amador Crespo"
+    given-names: "Pablo"
+    orcid: "https://orcid.org/0000-0002-3793-8794"
+  - family-names: "Rico"
+    given-names: "Andreu"
+    orcid: "https://orcid.org/0000-0002-1820-4218"
+abstract: >-
+  R package that infers the potential trophic links among the taxa of a
+  community from compilations of published interactions (the registry of
+  Gray et al. 2015 and Global Biotic Interactions), estimates with a Bayesian
+  hierarchical model how often links inferred with each class of taxonomic
+  evidence are observed in independent food webs, samples plausible food
+  webs from those probabilities for every sample of an abundance or biomass
+  table and summarises their topological indicators with credible
+  intervals.
+keywords:
+  - R
+  - food webs
+  - ecological networks
+  - trophic interactions
+  - metaweb
+  - Bayesian calibration
+  - freshwater ecology

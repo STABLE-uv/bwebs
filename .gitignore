@@ -1,0 +1,36 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+inst/doc
+/doc/
+/Meta/
+*.Rcheck/
+*.tar.gz
+# The development notes, the comparisons with the original analysis and the
+# results of the validation are not in this repository, nor are the GloBI
+# records (their licences depend on each source).
+data-raw/*
+!data-raw/*.R
+dev/*
+!dev/usage_examples.R
+!dev/globi/
+dev/globi/*
+!dev/globi/download_globi.R
+!dev/globi/process_globi.R
+!dev/globi/globi_queries.csv
+!dev/globi/globi_tuesday_lake.csv
+!dev/globi/globi_exclusions.csv
+!dev/validation/
+dev/validation/*
+!dev/validation/calibration_lme4.R
+!dev/validation/compare_rules.R
+!dev/validation/compare_sources.R
+!dev/validation/example_system.R
+!dev/validation/scoring_sensitivity.R
+!dev/validation/source_sensitivity.R
+!dev/validation/tuesday_lake.R
+!dev/validation/validation_groups.R
+!dev/validation/web_coverage.R
+!dev/validation/README.md
+!dev/validation/results.md

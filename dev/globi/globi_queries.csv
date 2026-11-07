@@ -1,0 +1,501 @@
+"query","validation","tuesday_lake","azoxy"
+"Aeshna",TRUE,FALSE,FALSE
+"Aeshna cyanea",TRUE,FALSE,FALSE
+"Aeshna juncea",TRUE,FALSE,FALSE
+"Aeshnidae",TRUE,FALSE,FALSE
+"Agabus",TRUE,FALSE,FALSE
+"Agabus bipustulatus",TRUE,FALSE,FALSE
+"Agabus sturmii",TRUE,FALSE,FALSE
+"Agapetus",TRUE,FALSE,FALSE
+"Agapetus fuscipes",TRUE,FALSE,FALSE
+"Amphinemura",TRUE,FALSE,FALSE
+"Amphinemura sulcicollis",TRUE,FALSE,FALSE
+"Anabolia",TRUE,FALSE,FALSE
+"Anabolia nervosa",TRUE,FALSE,FALSE
+"Ancylidae",TRUE,FALSE,FALSE
+"Ancylus",TRUE,FALSE,FALSE
+"Ancylus fluviatilis",TRUE,FALSE,FALSE
+"Anguilla",TRUE,FALSE,FALSE
+"Anguilla anguilla",TRUE,FALSE,FALSE
+"Anguillidae",TRUE,FALSE,FALSE
+"Anisoptera",FALSE,FALSE,TRUE
+"Antocha",TRUE,FALSE,FALSE
+"Antocha vitripennis",TRUE,FALSE,FALSE
+"Apatania",TRUE,FALSE,FALSE
+"Apataniidae",TRUE,FALSE,FALSE
+"Aphelocheiridae",TRUE,FALSE,FALSE
+"Aphelocheirus",TRUE,FALSE,FALSE
+"Aphelocheirus aestivalis",TRUE,FALSE,FALSE
+"Apsectrotanypus",TRUE,FALSE,FALSE
+"Apsectrotanypus trifascipennis",TRUE,FALSE,FALSE
+"Argyroneta",TRUE,FALSE,FALSE
+"Argyroneta aquatica",TRUE,FALSE,FALSE
+"Ascomorpha",TRUE,TRUE,FALSE
+"Ascomorpha ecaudis",TRUE,FALSE,FALSE
+"Ascomorpha eucadis",FALSE,TRUE,FALSE
+"Asellidae",TRUE,FALSE,FALSE
+"Asellus",TRUE,FALSE,FALSE
+"Asellus aquaticus",TRUE,FALSE,FALSE
+"Athripsodes",TRUE,FALSE,FALSE
+"Athripsodes cinereus",TRUE,FALSE,FALSE
+"Atyidae",FALSE,FALSE,TRUE
+"Baetidae",TRUE,FALSE,TRUE
+"Baetis",TRUE,FALSE,FALSE
+"Barbatula",TRUE,FALSE,FALSE
+"Barbatula barbatula",TRUE,FALSE,FALSE
+"Beraeidae",TRUE,FALSE,FALSE
+"Beraeodes",TRUE,FALSE,FALSE
+"Beraeodes minutus",TRUE,FALSE,FALSE
+"Bezzia",TRUE,FALSE,FALSE
+"Bosmina",TRUE,TRUE,TRUE
+"Bosmina longirostris",TRUE,TRUE,FALSE
+"Bosminidae",TRUE,TRUE,TRUE
+"Brachionidae",TRUE,TRUE,TRUE
+"Brachionus",FALSE,FALSE,TRUE
+"Brachionus angularis",FALSE,FALSE,TRUE
+"Brachionus havanaensis",FALSE,FALSE,TRUE
+"Brachycentridae",TRUE,FALSE,FALSE
+"Brachycentrus",TRUE,FALSE,FALSE
+"Brachycentrus subnubilus",TRUE,FALSE,FALSE
+"Brachyptera",TRUE,FALSE,FALSE
+"Brachyptera risi",TRUE,FALSE,FALSE
+"Brychius",TRUE,FALSE,FALSE
+"Brychius elevatus",TRUE,FALSE,FALSE
+"Caenidae",TRUE,FALSE,TRUE
+"Caenis",TRUE,FALSE,FALSE
+"Caenis rivulorum",TRUE,FALSE,FALSE
+"Calanoida",FALSE,FALSE,TRUE
+"Callicorixa",TRUE,FALSE,FALSE
+"Callicorixa praeusta",TRUE,FALSE,FALSE
+"Calopterygidae",TRUE,FALSE,FALSE
+"Calopteryx",TRUE,FALSE,FALSE
+"Calopteryx splendens",TRUE,FALSE,FALSE
+"Capnia",TRUE,FALSE,FALSE
+"Capnia vidua",TRUE,FALSE,FALSE
+"Capniidae",TRUE,FALSE,FALSE
+"Centrarchidae",TRUE,TRUE,FALSE
+"Centroptilum",TRUE,FALSE,FALSE
+"Centroptilum luteolum",TRUE,FALSE,FALSE
+"Cephalodella",FALSE,FALSE,TRUE
+"Ceratopogonidae",TRUE,FALSE,TRUE
+"Ceriodaphnia",FALSE,FALSE,TRUE
+"Chaetopteryx",TRUE,FALSE,FALSE
+"Chaetopteryx villosa",TRUE,FALSE,FALSE
+"Chaoboridae",TRUE,TRUE,FALSE
+"Chaoborus",TRUE,TRUE,FALSE
+"Chaoborus punctipennis",TRUE,TRUE,FALSE
+"Chironomidae",TRUE,FALSE,TRUE
+"Chironominae",TRUE,FALSE,FALSE
+"Chironomini",TRUE,FALSE,TRUE
+"Chloroperla",TRUE,FALSE,FALSE
+"Chloroperla tripunctata",TRUE,FALSE,FALSE
+"Chloroperlidae",TRUE,FALSE,FALSE
+"Chrosomus",TRUE,FALSE,FALSE
+"Chrosomus eos",TRUE,FALSE,FALSE
+"Chydoridae",FALSE,FALSE,TRUE
+"Chydorus",FALSE,FALSE,TRUE
+"Ciliophora",FALSE,FALSE,TRUE
+"Cloeon",TRUE,FALSE,TRUE
+"Cloeon simile",TRUE,FALSE,FALSE
+"Coenagrion",TRUE,FALSE,FALSE
+"Coenagrion puella",TRUE,FALSE,FALSE
+"Coenagrionidae",TRUE,FALSE,FALSE
+"Colubridae",TRUE,FALSE,FALSE
+"Colurella",FALSE,FALSE,TRUE
+"Colymbetes",FALSE,FALSE,TRUE
+"Colymbetes fuscus",FALSE,FALSE,TRUE
+"Conchapelopia",TRUE,FALSE,FALSE
+"Conochilidae",TRUE,TRUE,FALSE
+"Conochiloides",TRUE,TRUE,FALSE
+"Conochiloides dossuarius",TRUE,TRUE,FALSE
+"Conochilus",TRUE,TRUE,FALSE
+"Copepoda",FALSE,FALSE,TRUE
+"Cordulegaster",TRUE,FALSE,FALSE
+"Cordulegaster boltonii",TRUE,FALSE,FALSE
+"Cordulegastridae",TRUE,FALSE,FALSE
+"Corixidae",TRUE,FALSE,TRUE
+"Coronatella",FALSE,FALSE,TRUE
+"Cottidae",TRUE,FALSE,FALSE
+"Cottus",TRUE,FALSE,FALSE
+"Cottus gobio",TRUE,FALSE,FALSE
+"Cricotopus",TRUE,FALSE,FALSE
+"Cryptochironomus",TRUE,FALSE,FALSE
+"Cybaeidae",TRUE,FALSE,FALSE
+"Cyclopidae",TRUE,TRUE,FALSE
+"Cyclopoida",FALSE,FALSE,TRUE
+"Cyclops",TRUE,TRUE,FALSE
+"Cyclops varians",FALSE,TRUE,FALSE
+"Cyclops varicans",TRUE,FALSE,FALSE
+"Cymatia",TRUE,FALSE,FALSE
+"Cymatia coleoptrata",TRUE,FALSE,FALSE
+"Cyprinidae",TRUE,TRUE,FALSE
+"Cyrnus",TRUE,FALSE,FALSE
+"Cyrnus flavidus",TRUE,FALSE,FALSE
+"Daphnia",TRUE,TRUE,TRUE
+"Daphnia pulex",TRUE,TRUE,FALSE
+"Daphnia rosea",TRUE,TRUE,FALSE
+"Daphniidae",TRUE,TRUE,TRUE
+"Diamesa",TRUE,FALSE,FALSE
+"Diamesa bertrami",TRUE,FALSE,FALSE
+"Diamesa cinerella",TRUE,FALSE,FALSE
+"Diamesa dampfi",TRUE,FALSE,FALSE
+"Diamesa latitarsis",TRUE,FALSE,FALSE
+"Diaphanosoma",TRUE,TRUE,TRUE
+"Diaphanosoma leuchtenbergianum",TRUE,TRUE,FALSE
+"Diaptomidae",TRUE,TRUE,FALSE
+"Diaptomus",FALSE,TRUE,FALSE
+"Diaptomus oregonensis",FALSE,TRUE,FALSE
+"Dicranota",TRUE,FALSE,FALSE
+"Dicranota exclusa",TRUE,FALSE,FALSE
+"Drusus",TRUE,FALSE,FALSE
+"Drusus annulatus",TRUE,FALSE,FALSE
+"Dugastella",FALSE,FALSE,TRUE
+"Dugastella valentina",FALSE,FALSE,TRUE
+"Dugesia",TRUE,FALSE,TRUE
+"Dugesiidae",TRUE,FALSE,TRUE
+"Dytiscidae",TRUE,FALSE,TRUE
+"Dytiscus",TRUE,FALSE,FALSE
+"Dytiscus marginalis",TRUE,FALSE,FALSE
+"Ecclisopteryx",TRUE,FALSE,FALSE
+"Ecclisopteryx guttulata",TRUE,FALSE,FALSE
+"Ecdyonurus",TRUE,FALSE,FALSE
+"Ecdyonurus dispar",TRUE,FALSE,FALSE
+"Echinogammarus",FALSE,FALSE,TRUE
+"Eiseniella",TRUE,FALSE,FALSE
+"Eiseniella tetraedra",TRUE,FALSE,FALSE
+"Elmidae",TRUE,FALSE,FALSE
+"Elmis",TRUE,FALSE,FALSE
+"Elmis aenea",TRUE,FALSE,FALSE
+"Empididae",TRUE,FALSE,FALSE
+"Enallagma",TRUE,FALSE,FALSE
+"Enallagma cyathigerum",TRUE,FALSE,FALSE
+"Ephemera",TRUE,FALSE,FALSE
+"Ephemera danica",TRUE,FALSE,FALSE
+"Ephemerella",TRUE,FALSE,FALSE
+"Ephemerella notata",TRUE,FALSE,FALSE
+"Ephemerellidae",TRUE,FALSE,FALSE
+"Ephemeridae",TRUE,FALSE,FALSE
+"Eretes",FALSE,FALSE,TRUE
+"Eretes griseus",FALSE,FALSE,TRUE
+"Erpobdella",TRUE,FALSE,TRUE
+"Erpobdella octoculata",TRUE,FALSE,FALSE
+"Erpobdellidae",TRUE,FALSE,FALSE
+"Esocidae",TRUE,FALSE,FALSE
+"Esolus",TRUE,FALSE,FALSE
+"Esolus parallelepipedus",TRUE,FALSE,FALSE
+"Esox",TRUE,FALSE,FALSE
+"Esox lucius",TRUE,FALSE,FALSE
+"Euchlanidae",FALSE,FALSE,TRUE
+"Euchlanis",FALSE,FALSE,TRUE
+"Eukiefferiella",TRUE,FALSE,FALSE
+"Eukiefferiella claripennis",TRUE,FALSE,FALSE
+"Eukiefferiella minor",TRUE,FALSE,FALSE
+"Filinia",TRUE,TRUE,TRUE
+"Filinia longispina",FALSE,TRUE,FALSE
+"Filiniidae",FALSE,TRUE,FALSE
+"Gammaridae",TRUE,FALSE,TRUE
+"Gammarus",TRUE,FALSE,FALSE
+"Gammarus pulex",TRUE,FALSE,FALSE
+"Gammarus zaddachi",TRUE,FALSE,FALSE
+"Gasterosteidae",TRUE,FALSE,FALSE
+"Gasterosteus",TRUE,FALSE,FALSE
+"Gasterosteus aculeatus",TRUE,FALSE,FALSE
+"Gastropodidae",TRUE,TRUE,FALSE
+"Gastropus",TRUE,TRUE,FALSE
+"Gastropus hyptopus",TRUE,TRUE,FALSE
+"Gastropus stylifer",TRUE,TRUE,FALSE
+"Gerridae",FALSE,FALSE,TRUE
+"Glossiphonia",FALSE,FALSE,TRUE
+"Glossiphoniidae",TRUE,FALSE,FALSE
+"Glossosoma",TRUE,FALSE,FALSE
+"Glossosoma boltoni",TRUE,FALSE,FALSE
+"Glossosomatidae",TRUE,FALSE,FALSE
+"Goeridae",TRUE,FALSE,FALSE
+"Halesus",TRUE,FALSE,FALSE
+"Halesus radiatus",TRUE,FALSE,FALSE
+"Haliplidae",TRUE,FALSE,FALSE
+"Haliplus",TRUE,FALSE,FALSE
+"Haliplus lineatocollis",TRUE,FALSE,FALSE
+"Helobdella",TRUE,FALSE,TRUE
+"Helobdella stagnalis",TRUE,FALSE,FALSE
+"Hemerodromia",TRUE,FALSE,FALSE
+"Heptagenia",TRUE,FALSE,FALSE
+"Heptagenia sulphurea",TRUE,FALSE,FALSE
+"Heptageniidae",TRUE,FALSE,FALSE
+"Hesperodiaptomus",TRUE,FALSE,FALSE
+"Hesperodiaptomus shoshone",TRUE,FALSE,FALSE
+"Heterotrissocladius",TRUE,FALSE,FALSE
+"Hexarthra",FALSE,FALSE,TRUE
+"Hexarthridae",FALSE,FALSE,TRUE
+"Hexatoma",TRUE,FALSE,FALSE
+"Hirudinea",FALSE,FALSE,TRUE
+"Holocentropus",TRUE,FALSE,FALSE
+"Holocentropus picicornis",TRUE,FALSE,FALSE
+"Holopediidae",TRUE,TRUE,FALSE
+"Holopedium",TRUE,TRUE,FALSE
+"Holopedium gibberum",TRUE,TRUE,FALSE
+"Hydra",FALSE,FALSE,TRUE
+"Hydracarina",FALSE,FALSE,TRUE
+"Hydrachna",FALSE,FALSE,TRUE
+"Hydrachnidia",FALSE,FALSE,TRUE
+"Hydraena",TRUE,FALSE,FALSE
+"Hydraena gracilis",TRUE,FALSE,FALSE
+"Hydraenidae",TRUE,FALSE,FALSE
+"Hydridae",FALSE,FALSE,TRUE
+"Hydrobiidae",TRUE,FALSE,FALSE
+"Hydroglyphus",FALSE,FALSE,TRUE
+"Hydroglyphus geminus",FALSE,FALSE,TRUE
+"Hydroporini",TRUE,FALSE,FALSE
+"Hydroporus",TRUE,FALSE,FALSE
+"Hydroporus erythrocephalus",TRUE,FALSE,FALSE
+"Hydropsyche",TRUE,FALSE,FALSE
+"Hydropsyche contubernalis",TRUE,FALSE,FALSE
+"Hydropsyche fulvipes",TRUE,FALSE,FALSE
+"Hydropsyche instabilis",TRUE,FALSE,FALSE
+"Hydropsyche pellucidula",TRUE,FALSE,FALSE
+"Hydropsyche siltalai",TRUE,FALSE,FALSE
+"Hydropsychidae",TRUE,FALSE,FALSE
+"Hydroptila",TRUE,FALSE,FALSE
+"Hydroptilidae",TRUE,FALSE,FALSE
+"Ilybius",TRUE,FALSE,FALSE
+"Ilybius fuliginosus",TRUE,FALSE,FALSE
+"Isoperla",TRUE,FALSE,FALSE
+"Isoperla grammatica",TRUE,FALSE,FALSE
+"Isoperla obscura",TRUE,FALSE,FALSE
+"Kellicottia",TRUE,TRUE,FALSE
+"Kellicottia bostoniensis",TRUE,TRUE,FALSE
+"Kellicottia longispina",TRUE,TRUE,FALSE
+"Keratella",TRUE,TRUE,TRUE
+"Keratella cochlearis",TRUE,TRUE,FALSE
+"Keratella testudo",TRUE,TRUE,FALSE
+"Kurzia",FALSE,FALSE,TRUE
+"Lecane",FALSE,FALSE,TRUE
+"Lecane luna",FALSE,FALSE,TRUE
+"Lecane lunaris",FALSE,FALSE,TRUE
+"Lecanidae",FALSE,FALSE,TRUE
+"Lepadella",FALSE,FALSE,TRUE
+"Lepadellidae",FALSE,FALSE,TRUE
+"Lepidostoma",TRUE,FALSE,FALSE
+"Lepidostoma hirtum",TRUE,FALSE,FALSE
+"Lepidostomatidae",TRUE,FALSE,FALSE
+"Leptoceridae",TRUE,FALSE,FALSE
+"Leptodiaptomus",TRUE,TRUE,FALSE
+"Leptodiaptomus siciloides",TRUE,TRUE,FALSE
+"Lestes",TRUE,FALSE,FALSE
+"Lestes sponsa",TRUE,FALSE,FALSE
+"Lestidae",TRUE,FALSE,FALSE
+"Leuctra",TRUE,FALSE,FALSE
+"Leuctra fusca",TRUE,FALSE,FALSE
+"Leuctra geniculata",TRUE,FALSE,FALSE
+"Leuctra hippopus",TRUE,FALSE,FALSE
+"Leuctra inermis",TRUE,FALSE,FALSE
+"Leuctra nigra",TRUE,FALSE,FALSE
+"Leuctridae",TRUE,FALSE,FALSE
+"Leydigia",FALSE,FALSE,TRUE
+"Libellulidae",TRUE,FALSE,FALSE
+"Limnephilidae",TRUE,FALSE,FALSE
+"Limnephilus",TRUE,FALSE,FALSE
+"Limnephilus marmoratus",TRUE,FALSE,FALSE
+"Limnius",TRUE,FALSE,FALSE
+"Limnius volckmari",TRUE,FALSE,FALSE
+"Limnophila",TRUE,FALSE,FALSE
+"Limnophora",TRUE,FALSE,FALSE
+"Limonia",TRUE,FALSE,FALSE
+"Limoniidae",TRUE,FALSE,FALSE
+"Limoniinae",TRUE,FALSE,FALSE
+"Lumbricidae",TRUE,FALSE,FALSE
+"Lumbriculidae",TRUE,FALSE,TRUE
+"Lymnaea",TRUE,FALSE,FALSE
+"Lymnaea peregra",TRUE,FALSE,FALSE
+"Lymnaeidae",TRUE,FALSE,FALSE
+"Lype",TRUE,FALSE,FALSE
+"Lype reducta",TRUE,FALSE,FALSE
+"Macrochaetus",FALSE,FALSE,TRUE
+"Macropelopia",TRUE,FALSE,FALSE
+"Macropelopia nebulosa",TRUE,FALSE,FALSE
+"Macrothricidae",FALSE,FALSE,TRUE
+"Macrothrix",FALSE,FALSE,TRUE
+"Melanopsidae",FALSE,FALSE,TRUE
+"Melanopsis",FALSE,FALSE,TRUE
+"Micronecta",FALSE,FALSE,TRUE
+"Micropsectra",TRUE,FALSE,FALSE
+"Micropsectra atrofasciata",TRUE,FALSE,FALSE
+"Micropterus",TRUE,TRUE,FALSE
+"Micropterus salmoides",TRUE,TRUE,FALSE
+"Microtendipes",TRUE,FALSE,FALSE
+"Muscidae",TRUE,FALSE,FALSE
+"Mystacides",TRUE,FALSE,FALSE
+"Mystacides azurea",TRUE,FALSE,FALSE
+"Naididae",TRUE,FALSE,FALSE
+"Nemacheilidae",TRUE,FALSE,FALSE
+"Nemoura",TRUE,FALSE,FALSE
+"Nemoura cinerea",TRUE,FALSE,FALSE
+"Nemouridae",TRUE,FALSE,FALSE
+"Nemurella",TRUE,FALSE,FALSE
+"Nemurella pictetii",TRUE,FALSE,FALSE
+"Neritidae",TRUE,FALSE,TRUE
+"Nigrobaetis",TRUE,FALSE,FALSE
+"Nigrobaetis niger",TRUE,FALSE,FALSE
+"Noteridae",TRUE,FALSE,FALSE
+"Noterus",TRUE,FALSE,FALSE
+"Noterus clavicornis",TRUE,FALSE,FALSE
+"Notommatidae",FALSE,FALSE,TRUE
+"Notonecta",TRUE,FALSE,TRUE
+"Notonecta glauca",TRUE,FALSE,FALSE
+"Notonectidae",TRUE,FALSE,TRUE
+"Odontoceridae",TRUE,FALSE,FALSE
+"Odontocerum",TRUE,FALSE,FALSE
+"Odontocerum albicorne",TRUE,FALSE,FALSE
+"Oecetis",TRUE,FALSE,FALSE
+"Oecetis testacea",TRUE,FALSE,FALSE
+"Oncorhynchus",TRUE,FALSE,FALSE
+"Oncorhynchus aguabonita",TRUE,FALSE,FALSE
+"Oncorhynchus mykiss",TRUE,FALSE,FALSE
+"Orthocladiinae",TRUE,FALSE,TRUE
+"Orthocladius",TRUE,FALSE,FALSE
+"Orthocyclops",TRUE,TRUE,FALSE
+"Orthocyclops modestus",TRUE,TRUE,FALSE
+"Ostracoda",TRUE,FALSE,TRUE
+"Oulimnius",TRUE,FALSE,FALSE
+"Oulimnius troglodytes",TRUE,FALSE,FALSE
+"Oulimnius tuberculatus",TRUE,FALSE,FALSE
+"Oxyethira",TRUE,FALSE,FALSE
+"Pedicia",TRUE,FALSE,FALSE
+"Pediciidae",TRUE,FALSE,FALSE
+"Pentaneura",TRUE,FALSE,FALSE
+"Pentaneurella",TRUE,FALSE,FALSE
+"Perlodidae",TRUE,FALSE,FALSE
+"Philopotamidae",TRUE,FALSE,FALSE
+"Philopotamus",TRUE,FALSE,FALSE
+"Philopotamus montanus",TRUE,FALSE,FALSE
+"Phoxinus",TRUE,TRUE,FALSE
+"Phoxinus eos",FALSE,TRUE,FALSE
+"Phoxinus neogaeus",TRUE,TRUE,FALSE
+"Phoxinus phoxinus",TRUE,FALSE,FALSE
+"Physella",FALSE,FALSE,TRUE
+"Physella acuta",FALSE,FALSE,TRUE
+"Physidae",FALSE,FALSE,TRUE
+"Pisidiidae",TRUE,FALSE,FALSE
+"Pisidium",TRUE,FALSE,FALSE
+"Planariidae",TRUE,FALSE,FALSE
+"Platambus",TRUE,FALSE,FALSE
+"Platambus maculatus",TRUE,FALSE,FALSE
+"Platichthys",TRUE,FALSE,FALSE
+"Platichthys flesus",TRUE,FALSE,FALSE
+"Plectrocnemia",TRUE,FALSE,FALSE
+"Plectrocnemia conspersa",TRUE,FALSE,FALSE
+"Pleuronectidae",TRUE,FALSE,FALSE
+"Pleuroxus",FALSE,FALSE,TRUE
+"Ploesoma",TRUE,TRUE,FALSE
+"Polyarthra",TRUE,TRUE,TRUE
+"Polyarthra vulgaris",TRUE,TRUE,FALSE
+"Polycelis",TRUE,FALSE,FALSE
+"Polycelis tenuis",TRUE,FALSE,FALSE
+"Polycentropodidae",TRUE,FALSE,FALSE
+"Polycentropus",TRUE,FALSE,FALSE
+"Polycentropus flavomaculatus",TRUE,FALSE,FALSE
+"Polypedilum",TRUE,FALSE,FALSE
+"Potamophylax",TRUE,FALSE,FALSE
+"Potamophylax cingulatus",TRUE,FALSE,FALSE
+"Potamophylax latipennis",TRUE,FALSE,FALSE
+"Potamopyrgus",TRUE,FALSE,FALSE
+"Potamopyrgus antipodarum",TRUE,FALSE,FALSE
+"Procladius",TRUE,FALSE,FALSE
+"Procladius sagittalis",TRUE,FALSE,FALSE
+"Prodiamesa",TRUE,FALSE,FALSE
+"Prodiamesa olivacea",TRUE,FALSE,FALSE
+"Prosimulium",TRUE,FALSE,FALSE
+"Prosimulium ursinum",TRUE,FALSE,FALSE
+"Protonemura",TRUE,FALSE,FALSE
+"Protonemura meyeri",TRUE,FALSE,FALSE
+"Pseudokiefferiella",TRUE,FALSE,FALSE
+"Psychodidae",TRUE,FALSE,FALSE
+"Psychomyiidae",TRUE,FALSE,FALSE
+"Radix",TRUE,FALSE,FALSE
+"Radix balthica",TRUE,FALSE,FALSE
+"Rana",TRUE,FALSE,FALSE
+"Rana muscosa",TRUE,FALSE,FALSE
+"Ranidae",TRUE,FALSE,FALSE
+"Rheotanytarsus",TRUE,FALSE,FALSE
+"Rhithrogena",TRUE,FALSE,FALSE
+"Rhithrogena semicolorata",TRUE,FALSE,FALSE
+"Rhyacophila",TRUE,FALSE,FALSE
+"Rhyacophila dorsalis",TRUE,FALSE,FALSE
+"Rhyacophila fasciata",TRUE,FALSE,FALSE
+"Rhyacophila obliterata",TRUE,FALSE,FALSE
+"Rhyacophilidae",TRUE,FALSE,FALSE
+"Riolus",TRUE,FALSE,FALSE
+"Riolus cupreus",TRUE,FALSE,FALSE
+"Salmo",TRUE,FALSE,FALSE
+"Salmo trutta",TRUE,FALSE,FALSE
+"Salmonidae",TRUE,FALSE,FALSE
+"Salvelinus",TRUE,FALSE,FALSE
+"Salvelinus fontinalis",TRUE,FALSE,FALSE
+"Satchelliella",TRUE,FALSE,FALSE
+"Satchelliella trivialis",TRUE,FALSE,FALSE
+"Scapholeberis",FALSE,FALSE,TRUE
+"Sericostoma",TRUE,FALSE,FALSE
+"Sericostoma personatum",TRUE,FALSE,FALSE
+"Sericostomatidae",TRUE,FALSE,FALSE
+"Sialidae",TRUE,FALSE,FALSE
+"Sialis",TRUE,FALSE,FALSE
+"Sialis fuliginosa",TRUE,FALSE,FALSE
+"Sialis lutaria",TRUE,FALSE,FALSE
+"Sididae",TRUE,TRUE,TRUE
+"Silo",TRUE,FALSE,FALSE
+"Silo pallipes",TRUE,FALSE,FALSE
+"Simocephalus",FALSE,FALSE,TRUE
+"Simuliidae",TRUE,FALSE,FALSE
+"Simulium",TRUE,FALSE,FALSE
+"Simulium aureum",TRUE,FALSE,FALSE
+"Simulium vittatum",TRUE,FALSE,FALSE
+"Siphlonuridae",TRUE,FALSE,FALSE
+"Siphlonurus",TRUE,FALSE,FALSE
+"Siphlonurus lacustris",TRUE,FALSE,FALSE
+"Siphonoperla",TRUE,FALSE,FALSE
+"Siphonoperla torrentium",TRUE,FALSE,FALSE
+"Skistodiaptomus",TRUE,FALSE,FALSE
+"Skistodiaptomus oregonensis",TRUE,FALSE,FALSE
+"Stenophylax",TRUE,FALSE,FALSE
+"Sympetrum",TRUE,FALSE,FALSE
+"Sympetrum danae",TRUE,FALSE,FALSE
+"Synchaeta",TRUE,TRUE,TRUE
+"Synchaetidae",TRUE,TRUE,TRUE
+"Synorthocladius",TRUE,FALSE,FALSE
+"Taeniopterygidae",TRUE,FALSE,FALSE
+"Tanypodinae",TRUE,FALSE,FALSE
+"Tanytarsini",FALSE,FALSE,TRUE
+"Testudinella",FALSE,FALSE,TRUE
+"Testudinellidae",FALSE,FALSE,TRUE
+"Thamnophis",TRUE,FALSE,FALSE
+"Thamnophis elegans",TRUE,FALSE,FALSE
+"Theodoxus",TRUE,FALSE,TRUE
+"Theodoxus fluviatilis",TRUE,FALSE,FALSE
+"Thienemanniella",TRUE,FALSE,FALSE
+"Thymallus",TRUE,FALSE,FALSE
+"Thymallus thymallus",TRUE,FALSE,FALSE
+"Tinodes",TRUE,FALSE,FALSE
+"Tinodes waeneri",TRUE,FALSE,FALSE
+"Tipula",TRUE,FALSE,FALSE
+"Tipula montium",TRUE,FALSE,FALSE
+"Tipulidae",TRUE,FALSE,TRUE
+"Trichocerca",TRUE,TRUE,TRUE
+"Trichocerca cylindrica",TRUE,TRUE,FALSE
+"Trichocerca multicrinis",TRUE,TRUE,FALSE
+"Trichocercidae",TRUE,TRUE,TRUE
+"Trichotriidae",FALSE,FALSE,TRUE
+"Trissopelopia",TRUE,FALSE,FALSE
+"Trissopelopia longimana",TRUE,FALSE,FALSE
+"Trochosphaeridae",TRUE,FALSE,TRUE
+"Tropocyclops",TRUE,TRUE,FALSE
+"Tropocyclops prasinus",TRUE,TRUE,FALSE
+"Tubificidae",TRUE,FALSE,FALSE
+"Umbra",TRUE,TRUE,FALSE
+"Umbra limi",TRUE,TRUE,FALSE
+"Umbridae",TRUE,TRUE,FALSE
+"Valvata",TRUE,FALSE,FALSE
+"Valvata piscinalis",TRUE,FALSE,FALSE
+"Valvatidae",TRUE,FALSE,FALSE
+"Zavrelimyia",TRUE,FALSE,FALSE
+"Zavrelimyia barbatipes",TRUE,FALSE,FALSE
+"Zygoptera",FALSE,FALSE,TRUE

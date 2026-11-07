@@ -1,0 +1,185 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Edit README.Rmd and render it with rmarkdown::render("README.Rmd", output_format = rmarkdown::github_document(html_preview = FALSE)) after installing the package. -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# bwebs
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/STABLE-uv/bwebs/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/STABLE-uv/bwebs/actions/workflows/R-CMD-check.yaml)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+<!-- badges: end -->
+
+bwebs builds food webs for the samples of a community (taxa with abundances
+or biomasses in sites and dates) from compilations of published trophic
+interactions, and quantifies how uncertain those webs are. It infers the
+potential links among the taxa with the WebBuilder logic of Gray et al.
+(2015), estimates with a Bayesian hierarchical model how often links inferred
+with each kind of taxonomic evidence are observed in independent food webs,
+samples plausible webs from those probabilities and summarises their
+topological indicators (connectance, trophic levels, omnivory, trophic
+similarity, robustness...) with credible intervals, for every sample and for
+contrasts between groups of samples. The matching rule and the way of
+combining sources used by default were chosen among 21 rules and three
+sources (the Gray et al. registry, Global Biotic Interactions and both) by
+cross-validated Brier scores, and tested on an independent food web
+(Tuesday Lake).
+
+It ships the registry of 20,822 freshwater trophic interactions of Gray et
+al. (2015) (CC0), its calibration and the calibration of that registry
+combined with GloBI, the Tuesday Lake food webs of 1984 and 1986 (from the
+cheddar package), and downloads interactions from Global Biotic Interactions
+(GloBI).
+
+## Installation
+
+From GitHub, with its dependencies and the vignette:
+
+```r
+# install.packages("remotes")
+remotes::install_github("STABLE-uv/bwebs", dependencies = TRUE, build_vignettes = TRUE)
+```
+
+bwebs needs R (>= 3.6.0) and the packages MASS, stats, utils and withr;
+igraph is needed only for modularity.
+
+## Example
+
+The example community is invented: 23 freshwater taxa in three control and
+three exposed samples.
+
+```{r example}
+library(bwebs)
+
+# 1. Nodes and their matching ladder
+nodes <- prepare_nodes(example_taxa)
+
+# 2. Metaweb of potential links, with the evidence of each link
+mw <- build_metaweb(nodes, gray2015)
+mw
+
+# 3. Calibration of the registry (bundled; refit with calibrate_links())
+gray2015_calibration
+
+# 4. Plausible metawebs and the indicators of every sample in every draw
+draws <- sample_metawebs(mw, gray2015_calibration, n_draws = 100, seed = 2026)
+ind <- calc_indicators(draws, example_community, permanent = c("cpom", "fpom"))
+
+# In draws with very few links a sample can be left without links: its
+# indicators are undefined (status "empty_web")
+table(ind$values$status)
+
+# 5. Posterior summaries by treatment, and contrasts within draws; na_rm = TRUE
+#    leaves out the draws where an indicator is undefined (see n_missing)
+summarize_indicators(ind, indicators = c("S", "C", "TL_mean"), samples = example_samples,
+                     by = "treatment", na_rm = TRUE)[, c(1:7, 13)]
+contrast_indicators(ind, example_samples, by = "treatment", reference = "control",
+                    indicators = c("S", "C", "TL_mean"), na_rm = TRUE)[, c(1, 3:8, 10)]
+```
+
+## Methods and decisions
+
+* **Matching rule** (`matching_rule()`): every node is matched with the
+  registry at family level and climbs to order and class until it links with
+  at least five other nodes; every registry is used at every level; predators
+  do not climb as resources; records resolved only to a coarse rank and
+  generic resources ("Algae") are extended downwards; surrogates and manual
+  links are explicit decisions of the user.
+* **Choice of the rule and the sources** (`candidate_rules()`,
+  `compare_rules()`): 21 rules (fixed matching, climbing and the WebBuilder
+  ladder of Gray et al. 2015, from several starting levels and thresholds)
+  were scored on the 12 validation webs of the registry other than Tuesday
+  Lake, each rebuilt without the studies of its system
+  (`gray2015_rule_comparison`); the main eight were scored again with GloBI
+  records and with both sources, leaving out of each web the GloBI studies
+  that copy it (`source_comparison`). The default, climbing from family to
+  class with both sources at every level, had the lowest mean Brier score
+  (0.199, against 0.223 with the Gray registry alone): GloBI raised the share
+  of recorded links that are inferred from 67% to 91% with the same
+  precision (39%). Climbing from family scored better than starting at genus,
+  the ladder or no generalisation with every source; the threshold (one or
+  five partners) made no difference larger than its standard error. The
+  result held without the secondary compilations of GloBI (metawebs and
+  trait databases).
+* **Class of evidence** (`build_metaweb()`): the taxonomic generalisation
+  needed by the best record that supports each link (same taxon, genus,
+  subfamily, family, order, class, generic group).
+* **Calibration** (`validate_rule()`, `calibrate_links()`): a logistic model
+  with one coefficient per class of evidence and a random effect of the web,
+  fitted to how many inferred links were observed in the webs left out, with
+  weakly informative priors and a posterior sampled by Metropolis-Hastings.
+  The probability of a link is that of observing it in a comparable
+  well-studied community, a lower bound for its existence. Links that are
+  not inferred are not modelled.
+* **Sampling** (`sample_metawebs()`): in each draw the parameters come from
+  the posterior and, by default, the effect of the system from its
+  distribution (an unknown system); each link is kept with the probability of
+  its class. The same draw is used for every sample, so contrasts between
+  samples are computed within draws (`contrast_indicators()`).
+* **Independent test** (`score_metaweb()`, `tuesday_lake_taxa`): with
+  registries and calibrations without Tuesday Lake, the default inferred 71%
+  of the links of the Tuesday Lake webs (22% with the Gray registry alone,
+  which has few diets of plankton), with a Brier skill of 0.10 over the null
+  model (−0.01 with Gray alone). The ranking of the combinations on Tuesday
+  Lake agreed with the cross-validation (Spearman 0.73). The webs sampled
+  still have too many basal species and too low a mean trophic level.
+* **Indicators** (`web_indicators()`): on the web without cannibalism and
+  without isolated nodes, aggregated into trophic species.
+
+Decisions to make for each data set: which studies are used for the
+calibration (`validate_rule(sources = )`) and which of them describe the
+same system (`groups = `; see `shared_studies()`), whether the system is
+unknown or typical (`sample_metawebs(system = )`), and which unsampled
+resources are always present (`calc_indicators(permanent = )`). See the
+vignette (`vignette("bwebs")`) and the help pages.
+
+## Status
+
+Version 0.2.0, experimental and not on CRAN.
+
+* The metaweb engine and the indicators reproduce exactly the code of the
+  original analysis (1319 links of a 108-node metaweb; 27 indicators of 120
+  webs) with the rule of that analysis (`matching_rule(min_partners = 1)`).
+* The maximum-likelihood fit agrees with `lme4::glmer(nAGQ = 20)`; the
+  Bayesian fit agrees with the posterior computed on a grid for a small
+  problem.
+* Indicators are checked against hand calculations and igraph.
+* `R CMD check --as-cran` runs without errors and with all tests passing
+  on Ubuntu 24.04 with R 4.3.3; GitHub Actions runs `R CMD check` on macOS,
+  Windows and Ubuntu.
+* The GloBI download used for the comparison of sources and for
+  `gray2015_globi_calibration` (832,003 records, 3 November 2026) is not
+  included; `dev/globi/` has the scripts that download and process it, and
+  `dev/validation/` those of the comparisons (results in
+  `dev/validation/results.md`).
+
+## Known limitations
+
+* Links that are not inferred are not modelled (their probability is 0):
+  the sampled webs can only lose links of the metaweb. On Tuesday Lake they
+  had too many basal species and too low a mean trophic level.
+* The probabilities of the classes of evidence come from 13 validation
+  webs, mostly of British rivers and streams, and transfer imperfectly to
+  other systems: the generic class ("Algae" extended to all algae) was
+  calibrated at 0.61 with the Gray registry as the primary registry, but
+  only 13% of those links were observed in Tuesday Lake.
+* Only studies 13 and 50 are left out together as webs of the same system;
+  46 and 49 (Woodward, Hildrew et al.) and 15 and 59 (P. H. Warren) may also
+  describe the same systems (`validate_rule(groups = )`).
+* `gray2015_globi_calibration` was fitted with the GloBI records downloaded
+  for the consumers of the validation webs, of Tuesday Lake and of the
+  azoxystrobin experiment of Amador et al. (2024); a metaweb built with
+  another GloBI download is only approximately calibrated by it.
+* The threshold of five partners was chosen by a margin smaller than its
+  standard error; `matching_rule(min_partners = 1)` gives the rule of the
+  original analysis.

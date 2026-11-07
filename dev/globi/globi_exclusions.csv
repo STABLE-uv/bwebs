@@ -1,0 +1,44 @@
+"web","study_id","n_links","n_shared","share"
+"46","from Brose et al 2005 (Woodward & Hildrew (2001); Woodward et al., in press.)",149,149,1
+"59","Warren, P. H. (1989). Spatial and temporal variation in the structure of a freshwater food web. Oikos, 55, 299�311.",316,316,1
+"23","Jones, J. R. E. (1951). An ecological study of the river Towy. Journal of Animal Ecology, 20(1), 68�86.",179,169,0.94413407821229
+"11","from Brose et al 2005 (Harper-Smith et al., in press)",186,173,0.93010752688172
+"13","from Brose et al 2005 (Ledger, Edwards & Woodward unpublished)",367,332,0.904632152588556
+"27","Layer, K., Riede, J.O., Hildrew, A.G. & Woodward, G. (2010) Food Web Structure and Stability in 20 Streams Across a Wide pH Gradient. Advances in Ecological Research, 42, 265�299.",5497,4949,0.900309259596143
+"47","Gilljam, D., et al. (2011). Seeing Double: Size-Based and Taxonomic Views of Food Web Structure. Advances in Ecological Research, 45, 67�133",472,418,0.885593220338983
+"50","Ledger, M.E., Brown, L.E., Edwards, F., Milner, A.M. & Woodward, G. (2012) Drought alters the structure and functioning of complex food webs. Nature Climate Change.",767,661,0.861799217731421
+"15","from Brose et al 2005 (Warren, unpublished)",145,122,0.841379310344828
+"63","O�Gorman, E. J., Pichler, D. E., Adams, G., Benstead, J. P., Cohen, H., Craig, N., � Woodward, G. (2012). Impacts of Warming on the Structure and Functioning of Aquatic Communities: Individual- to Ecosystem-Level Responses. Advances in Ecological Research, Volume 47, 81�176",153,120,0.784313725490196
+"49","Woodward, G., Speirs, D. C., & Hildrew, A. G. (2005). Quantification and resolution of a complex, size-structured food web. Advances in Ecological Research, 36, 85�135. Retrieved from <Go to ISI>://WOS:000229213700002",30,22,0.733333333333333
+"59","Poelen, J. H. Global Biotic Interactions: Interpreted Data Products. Zenodo https://doi.org/10.5281/zenodo.5708970 (2021).",316,229,0.724683544303797
+"59","Warren (1989)",316,220,0.69620253164557
+"23","Gray",179,123,0.687150837988827
+"23","Globi",179,104,0.581005586592179
+"13","Ledger, M.E., Brown, L.E., Edwards, F., Milner, A.M. & Woodward, G. (2012) Drought alters the structure and functioning of complex food webs. Nature Climate Change.",367,210,0.572207084468665
+"58","Clitherow, L.R., Carrivick, J.L. & Brown, L.E. (2013) Food Web Structure in a Harsh Glacier-Fed River. Plos One, 8, e60899.",69,35,0.507246376811594
+"46","Poelen, J. H. Global Biotic Interactions: Interpreted Data Products. Zenodo https://doi.org/10.5281/zenodo.5708970 (2021).",149,72,0.483221476510067
+"15","Poelen, J. H. Global Biotic Interactions: Interpreted Data Products. Zenodo https://doi.org/10.5281/zenodo.5708970 (2021).",145,63,0.43448275862069
+"11","Globi",186,75,0.403225806451613
+"11","Gray",186,75,0.403225806451613
+"47","Poelen, J. H. Global Biotic Interactions: Interpreted Data Products. Zenodo https://doi.org/10.5281/zenodo.5708970 (2021).",472,188,0.398305084745763
+"59","Warren, P.H. (1989) Spatial and Temporal Variation in the Structure of a Freshwater Food Web. Oikos. 55, pp. 299-311.",316,112,0.354430379746835
+"49","Layer et al. (2010)",30,10,0.333333333333333
+"13","Gray et al. (2015), Thompson et al. (2017)",367,107,0.291553133514986
+"50","from Brose et al 2005 (Ledger, Edwards & Woodward unpublished)",767,210,0.273794002607562
+"11","Poelen, J. H. Global Biotic Interactions: Interpreted Data Products. Zenodo https://doi.org/10.5281/zenodo.5708970 (2021).",186,43,0.231182795698925
+"13","Layer et al. (2010)",367,84,0.228882833787466
+"50","Gray et al. (2015), Thompson et al. (2017)",767,169,0.220338983050847
+"46","@article{HILDREW_1985,	doi = {10.1111/j.1365-2311.1985.tb00738.x}, url = {https://doi.org/10.1111%2Fj.1365-2311.1985.tb00738.x}, year = 1985, month = {nov}, publisher = {Wiley}, volume = {10}, number = {4}, pages = {403--413}, author = {ALAN G. HILDREW and COLIN R. TOWNSEND and AZIM HASHAM}, title = {The predatory Chironomidae of an iron-rich stream: feeding ecology and food web structure}, journal = {Ecological Entomology}}",149,31,0.208053691275168
+"46","A.G. Hildrew, C.R. Townsend, and A. Hasham. (1985). The predatory Chironomidae of an iron-rich stream: feeding ecology and food web structure. Ecological Entomology, 10, 403-413.",149,31,0.208053691275168
+"59","@article{Warren_1989, doi = {10.2307/3565588}, url = {https://doi.org/10.2307%2F3565588}, year = 1989, month = {jul}, publisher = {{JSTOR}}, volume = {55}, number = {3},	pages = {299}, author = {Philip H. Warren}, title = {Spatial and Temporal Variation in the Structure of a Freshwater Food Web}, journal = {Oikos}}",316,61,0.193037974683544
+"50","Layer et al. (2010)",767,145,0.189048239895698
+"46","Layer et al. (2010)",149,28,0.187919463087248
+"47","Gray et al. (2015), Thompson et al. (2017)",472,88,0.186440677966102
+"47","Globi",472,87,0.184322033898305
+"47","Gray",472,87,0.184322033898305
+"63","O'Gorman et al. (2012)",153,28,0.183006535947712
+"23","Gray et al. (2015), Thompson et al. (2017)",179,31,0.173184357541899
+"47","Layer et al. (2010)",472,69,0.146186440677966
+"49","Poelen, J. H. Global Biotic Interactions: Interpreted Data Products. Zenodo https://doi.org/10.5281/zenodo.5708970 (2021).",30,4,0.133333333333333
+"27","Layer et al. (2010)",5497,697,0.126796434418774
+"63","Gray et al. (2015), Thompson et al. (2017)",153,18,0.117647058823529

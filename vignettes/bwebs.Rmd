@@ -1,0 +1,371 @@
+---
+title: "Food webs with calibrated link probabilities"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Food webs with calibrated link probabilities}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+```{r setup}
+library(bwebs)
+```
+
+This vignette goes through the whole workflow on the invented example
+community of the package and explains the methodological decisions behind
+each step: how links are inferred, how their probabilities are calibrated,
+how the default matching rule was chosen and how it performs on an
+independent food web.
+
+## 1. The community and its nodes
+
+A community is described by two tables. The **nodes** have one row per taxon
+(or non-taxonomic resource, such as detritus), with its classification
+aligned with the names of the registry, its role and its rank of
+identification:
+
+```{r}
+example_taxa[, c("node_id", "taxon", "rank", "role", "family", "order", "class")]
+```
+
+The **community** has one row per sample and node, in long format, with an
+abundance or biomass. Only presence is used: a node is present when its value
+is greater than `threshold` (0 by default). A zero is an observed absence;
+`NA` is unknown and is never treated as an absence.
+
+```{r}
+head(example_community)
+```
+
+`prepare_nodes()` validates the nodes and computes, for each node and role,
+the levels at which it is matched with the registry. Detritus is matched by
+name and alias; producers and detritus never consume; the shrimp
+*Dugastella valentina*, absent from the registry, takes the records of
+*Asellus* through an explicit surrogate.
+
+```{r}
+nodes <- prepare_nodes(example_taxa)
+nodes
+```
+
+## 2. The metaweb and the evidence of each link
+
+`build_metaweb()` infers the potential links with the WebBuilder logic of
+Gray et al. (2015): a link resource → consumer exists if a record of the
+registry matches both nodes at their levels. The default `matching_rule()`
+starts at family level and climbs to order and class until a node links with
+at least five other nodes of the community, using every registry at every
+level (section 4 shows how this rule was chosen).
+
+```{r}
+mw <- build_metaweb(nodes, gray2015)
+mw
+head(mw$edges[, c("resource", "consumer", "support", "n_sources", "evidence_class")])
+```
+
+Each link keeps the **class of evidence** of its best supporting record: the
+taxonomic generalisation needed to reach it (`exact` when the record names
+the node itself, then `genus`, `subfamily`, `family`, `order`, `class`, or
+`generic` for generic resources such as "Algae").
+
+## 3. Calibration: how often are inferred links observed?
+
+A metaweb built from a compilation contains links that are not realised in a
+given community, and more so the more taxonomic generalisation they needed.
+`validate_rule()` measures this on the registry itself: each validation
+study (a whole community with recorded diets) is left out in turn, rebuilt
+from the rest of the registry with the same rule, and the inferred links are
+compared with those recorded in it.
+
+Studies of the same system share records. If one of them stays in the
+registry while the other is rebuilt, its records predict the other and the
+probabilities are overestimated. `shared_studies()` finds them:
+
+```{r}
+validation_webs <- gray2015_sources$study_id[gray2015_sources$validation]
+shared_studies(gray2015, validation_webs, threshold = 0.2)
+```
+
+62% of the links of study 13 are also recorded in study 50, so the two are
+left out together (`groups`). Study 12 is Tuesday Lake (section 5).
+
+`calibrate_links()` then fits a logistic model with one coefficient per
+class of evidence and a random effect of the web to the counts of inferred
+and observed links. It is a Bayesian model: the coefficients have normal
+priors (standard deviation `prior_sd = 1.5` on the logit scale) and the
+standard deviation of the web effect a half-normal prior (scale
+`prior_sigma = 2.5`); the web effects are integrated out by adaptive
+Gauss-Hermite quadrature and the posterior is sampled by Metropolis-Hastings
+(`diagnostics$rhat` should be close to 1 and `diagnostics$ess` large). The
+package includes the calibration of the Gray et al. (2015) registry with the
+default rule:
+
+```{r}
+gray2015_calibration
+gray2015_calibration$webs[, c("study_id", "n_consumers", "n_predicted", "precision")]
+```
+
+`p_average` is the probability in a web with an average effect and `p_new`
+the probability in a new system, averaged over web effects. Two results
+matter for the interpretation:
+
+* Links supported by records of the same genus are observed more often than
+  links that needed a family or an order: the class of evidence is
+  informative. The probability does not fall steadily with the
+  generalisation, though: links of the same taxon are observed less often
+  than links of the same genus, and links that needed a class about as
+  often.
+* The proportion of inferred links that are observed varies a lot between
+  webs (the standard deviation of the web effect on the logit scale is
+  `r round(gray2015_calibration$sigma, 2)`): part of it reflects differences
+  between systems, part how completely each web was described.
+
+The probability of a link is the probability of observing it in a comparable,
+well-studied community. Because validation webs miss rare links, it is a
+lower bound for the existence of the link. Pairs without an inferred link are
+not modelled: in a registry web a taxon is listed because it eats or is
+eaten, so the rate of links among pairs that were not inferred in those webs
+does not transfer to communities sampled independently of their diets.
+
+Which studies count as whole communities is a scientific decision. The
+bundled calibration uses a provisional set (`gray2015_sources$validation`);
+to use another one, validate and calibrate again (a few minutes):
+
+```{r, eval = FALSE}
+my_sources <- c("27", "13", "50", "12", "59", "63", "11", "15", "58", "46", "49")
+v <- validate_rule(gray2015, sources = my_sources, groups = list(c("13", "50")))
+my_calibration <- calibrate_links(v, seed = 1)
+```
+
+## 4. Choosing the matching rule and the sources
+
+How far should a node climb, and from where? `score_rule()` answers with a
+cross-validated **Brier score**: each validation system is left out of the
+calibration in turn, its inferred links take the probability of their class
+in a new system under the calibration fitted to the other systems, pairs
+without an inferred link take probability 0, and the squared errors against
+the recorded links are averaged over all the pairs of the web (lower is
+better). A missed link costs 1, an inferred link of probability \(p\) costs
+\((1 - p)^2\) when it is real and \(p^2\) when it is not, so the score
+rewards both finding the links and giving them the right probabilities. The
+`skill` compares it with a null model that gives every pair the mean
+connectance of the other systems, and `tss` is the true skill statistic of
+the deterministic metaweb, as in Gray et al. (2015).
+
+`compare_rules()` scores a list of rules on the same webs; `candidate_rules()`
+is the grid of 21 rules (fixed matching at the taxon, genus, family or
+order; climbing from genus or family to order or class with thresholds of 1
+or 5 partners; the WebBuilder ladder up to family, order or class; three
+rules without downward inheritance). With the Gray registry alone (Tuesday
+Lake kept apart, section 5), the comparison takes about half an hour, so its
+result is included:
+
+```{r, eval = FALSE}
+registry <- gray2015[gray2015$study_id != "12", ]   # Tuesday Lake kept apart
+sources <- setdiff(validation_webs, "12")
+cmp <- compare_rules(registry, sources = sources, groups = list(c("13", "50")), seed = 2026)
+```
+
+```{r}
+gray2015_rule_comparison[, c("rule", "brier", "brier_diff", "brier_diff_se", "skill", "tss",
+                             "precision", "recall")]
+```
+
+Climbing from family to class had the lowest score. The threshold (one or
+five partners) and the downward inheritance made no difference larger than
+its standard error; starting at genus, using the ladder of Gray et al.
+(2015) or matching at a fixed level scored worse, and matching only the
+taxon itself scored worst. With the Gray registry alone the skill of every
+rule is slightly negative: a third of the recorded links are not inferred.
+
+The eight main rules were then scored with records of Global Biotic
+Interactions (GloBI, section 9) for the consumers of the validation webs,
+alone and combined with the Gray registry. When each web was rebuilt, the
+GloBI studies holding at least 10% of its links (copies of that web in
+other compilations) were left out too (`validate_rule(exclusions = )`):
+
+```{r}
+source_comparison[1:12, c("source", "primary_registry", "supplementary_max_level", "rule",
+                          "brier", "diff_vs_gray", "diff_vs_gray_se", "skill", "recall")]
+```
+
+Both registries used at every level (no primary registry) with the default
+rule scored best, and this combination sets the defaults of
+`matching_rule()`. GloBI raised the share of recorded links that are inferred
+from two thirds to nine tenths without lowering the precision (about 40%),
+and the skill became positive. Using GloBI only up to family
+(`primary_registry = "gray2015"`, `supplementary_max_level = "family"`)
+scored worse than using it at every level. GloBI holds secondary
+compilations (metawebs and trait databases) that may contain the
+validation webs generalised to family or order, which the exclusions by
+shared links do not detect; without them the scores were nearly the same
+(`dev/validation/source_sensitivity.R` in the GitHub repository of the
+package). The rule itself was again best climbing from family, with any
+source.
+
+## 5. An independent test: Tuesday Lake
+
+The Tuesday Lake food webs of 1984 and 1986 (Cohen et al. 2003; Jonsson et
+al. 2005), from the cheddar package (Hudson et al. 2013), are an independent
+test: study 12 of the registry is Tuesday Lake, so it was left out of the
+registry and of the validation webs while the rules and the sources were
+compared, and so were the GloBI studies that copy it.
+
+```{r}
+head(tuesday_lake_taxa[, c("node_id", "taxon", "rank", "role", "family", "class")])
+table(tuesday_lake_links$sample_id)
+```
+
+`score_metaweb()` compares a metaweb with an observed web. For the test, the
+metaweb is built from the registry without study 12 and the calibration is
+fitted to the other 12 webs:
+
+```{r, eval = FALSE}
+v <- validate_rule(registry, sources = sources, groups = list(c("13", "50")))
+cal <- calibrate_links(v, seed = 2026)
+mw_tl <- build_metaweb(prepare_nodes(tuesday_lake_taxa), registry)
+tl84 <- tuesday_lake_links[tuesday_lake_links$sample_id == "TL84", ]
+present <- tuesday_lake_community$node_id[tuesday_lake_community$sample_id == "TL84"]
+score_metaweb(mw_tl, cal, tl84, nodes = present)
+```
+
+The scores on Tuesday Lake (mean of the two years) are in the same tables:
+
+```{r}
+source_comparison[1:12, c("source", "rule", "tl_brier", "tl_skill", "tl_tss", "tl_precision",
+                          "tl_recall")]
+```
+
+The default inferred about 70% of the observed links (a fifth with the Gray
+registry alone, mostly British streams with few diets of plankton) and had
+a positive skill; the ranking of the combinations on Tuesday Lake agreed
+with the cross-validation (Spearman correlation 0.73). Two weaknesses
+remain. Links inferred from generic resources ("Algae" extended to every
+alga) are frequent in the validation streams but rare in this plankton web,
+so their calibrated probability is too high there. And the webs sampled
+from the metaweb have too many basal species and too low a mean trophic
+level: sampling can only remove links of the metaweb, not add those it
+misses.
+
+## 6. Plausible metawebs
+
+`sample_metawebs()` takes the coefficients and the standard deviation of the
+web effect of each draw from the posterior draws of the calibration and,
+with `system = "random"`, draws the effect of the system, and keeps each link
+with the probability of its class. One realisation of the metaweb is shared
+by all the samples of the community in each draw.
+
+```{r}
+draws <- sample_metawebs(mw, gray2015_calibration, n_draws = 100, seed = 2026)
+draws
+head(draws$links[, c("resource", "consumer", "evidence_class", "p_mean", "inclusion")])
+```
+
+With `system = "average"` the system effect is fixed at 0 (a community like
+the average validation web) and the intervals are narrower; a number fixes it
+at that value on the logit scale.
+
+## 7. Indicators of every sample
+
+`calc_indicators()` builds the web of each sample in each draw (the nodes
+present plus the permanent resources) and computes the indicators of
+`web_indicators()` on the web without cannibalism and without isolated nodes,
+aggregated into trophic species. Modularity (with igraph) and robustness are
+optional because they are slower.
+
+```{r}
+ind <- calc_indicators(draws, example_community, permanent = c("cpom", "fpom"))
+head(ind$values[, c("draw", "sample_id", "S", "L", "C", "TL_mean", "prop_omnivores")])
+table(ind$values$status)
+```
+
+In draws with a very negative system effect the metaweb keeps few links, and
+a sample can be left without any: its indicators are then undefined
+(`status = "empty_web"`), not zero. By default the summaries report such
+draws as missing; with `na_rm = TRUE` they are left out and counted in
+`n_missing`, and the summaries then describe the draws where the indicator is
+defined.
+
+## 8. Summaries and contrasts
+
+`summarize_indicators()` summarises the draws by sample or by groups of
+samples; `contrast_indicators()` compares groups within each draw, which
+keeps the uncertainty shared by all the samples of a draw out of the
+contrast.
+
+```{r}
+summarize_indicators(ind, indicators = c("S", "C", "TL_mean"), samples = example_samples,
+                     by = "treatment", na_rm = TRUE)[, c(1:7, 13)]
+contrast_indicators(ind, example_samples, by = "treatment", reference = "control",
+                    indicators = c("S", "C", "TL_mean"), na_rm = TRUE)[, c(1, 3:8, 10)]
+```
+
+The deterministic metaweb gives the reference values of the potential webs:
+
+```{r}
+det <- calc_indicators(mw, example_community, permanent = c("cpom", "fpom"))
+summarize_indicators(det, indicators = c("S", "C", "TL_mean"),
+                     samples = example_samples, by = "treatment")[, 1:4]
+```
+
+## 9. GloBI and other registries
+
+`fetch_globi()` downloads trophic interactions from Global Biotic
+Interactions and `globi_to_registry()` converts them (an internet connection
+is needed, so this is not run here). Query each consumer of the community by
+name, genus and family, as for `gray2015_globi_calibration`. GloBI already
+contains the Gray et al. (2015) and Brose et al. (2005) compilations, which
+are dropped by default, and other copies of classic food webs: check them
+with `shared_studies()`.
+
+```{r, eval = FALSE}
+taxa <- unique(c(example_taxa$taxon, example_taxa$genus, example_taxa$family))
+raw <- fetch_globi(taxa[!is.na(taxa)], cache_dir = "globi_cache")
+globi <- globi_to_registry(raw)
+both <- combine_registries(gray2015, globi)
+mw2 <- build_metaweb(nodes, both)
+draws2 <- sample_metawebs(mw2, gray2015_globi_calibration, n_draws = 100, seed = 2026)
+```
+
+`gray2015_globi_calibration` is the calibration of the default rule with the
+Gray registry combined with GloBI (13 validation webs, with the GloBI copies
+of each web left out when it was rebuilt):
+
+```{r}
+gray2015_globi_calibration
+```
+
+A metaweb and its calibration must use the same rule and the same
+registries: `sample_metawebs()` warns when the registries differ, because
+the probability of each class of evidence depends on them, and links
+supported only by registries outside the calibration have no probability
+(`uncalibrated = `). To calibrate another combination, validate it with the
+GloBI records of the consumers of the validation webs
+(`validate_rule(train_registries = , exclusions = )`; see
+`dev/globi/` and `dev/validation/` in the GitHub repository of the
+package).
+
+## References
+
+Cohen JE, Jonsson T, Carpenter SR (2003). Ecological community description
+using the food web, species abundance, and body size. *Proceedings of the
+National Academy of Sciences of the USA*, 100(4), 1781–1786.
+<https://doi.org/10.1073/pnas.232715699>
+
+Gray C, Figueroa DH, Hudson LN, Ma A, Perkins D, Woodward G (2015). Joining
+the dots: an automated method for constructing food webs from compendia of
+published interactions. *Food Webs*, 5, 11–20.
+<https://doi.org/10.1016/j.fooweb.2015.09.001>
+
+Hudson LN, Emerson R, Jenkins GB, Layer K, Ledger ME, Pichler DE, Thompson
+MSA, O'Gorman EJ, Woodward G, Reuman DC (2013). Cheddar: analysis and
+visualisation of ecological communities in R. *Methods in Ecology and
+Evolution*, 4(1), 99–104. <https://doi.org/10.1111/2041-210X.12005>
+
+Jonsson T, Cohen JE, Carpenter SR (2005). Food webs, body size, and species
+abundance in ecological community description. *Advances in Ecological
+Research*, 36, 1–84. <https://doi.org/10.1016/S0065-2504(05)36001-6>

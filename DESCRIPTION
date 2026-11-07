@@ -1,0 +1,48 @@
+Package: bwebs
+Title: Bayesian Food Webs from Compiled Trophic Interactions
+Version: 0.2.0
+Authors@R: c(
+    person("Pablo", "Amador Crespo", email = "pamadorc@gmail.com",
+           role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0002-3793-8794")),
+    person("Andreu", "Rico", role = "aut",
+           comment = c(ORCID = "0000-0002-1820-4218"))
+  )
+Description: Infers the potential trophic links among the taxa of a
+    community from compilations of published interactions, with the method
+    of Gray et al. (2015) <doi:10.1016/j.fooweb.2015.09.001> and its
+    registry of freshwater interactions, estimates with a Bayesian
+    hierarchical model how often links inferred with each class of taxonomic
+    evidence are observed in independent food webs, compares matching rules
+    and sources of interactions (that registry and Global Biotic
+    Interactions) by cross-validated Brier scores, samples plausible food
+    webs from the link probabilities for every sample of an abundance or
+    biomass table and summarises standard topological indicators with
+    credible intervals.
+    Includes the Tuesday Lake food webs (Cohen et al. 2003
+    <doi:10.1073/pnas.232715699>) as an independent test.
+License: MIT + file LICENSE
+Copyright: see file COPYRIGHTS
+URL: https://github.com/STABLE-uv/bwebs
+BugReports: https://github.com/STABLE-uv/bwebs/issues
+Encoding: UTF-8
+Language: en-US
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 3.6.0)
+Imports:
+    MASS,
+    stats,
+    utils,
+    withr
+Suggests:
+    curl,
+    igraph,
+    knitr,
+    lme4,
+    rmarkdown,
+    testthat (>= 3.1.7)
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+RoxygenNote: 7.3.1
+LazyData: true
