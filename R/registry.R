@@ -92,7 +92,7 @@ as_registry <- function(data, registry, taxonomy_fixes = default_taxonomy_fixes(
   reg$consumer_std <- apply_fixes(reg$consumer, taxonomy_fixes)
   reg$res_stage <- normalise_stage(reg$res_stage)
   reg$con_stage <- normalise_stage(reg$con_stage)
-  if (all(is.na(reg$record_id))) reg$record_id <- paste0(registry, "_", seq_len(nrow(reg)))
+  if (all(is.na(reg$record_id))) reg$record_id <- sprintf("%s_%d", registry, seq_len(nrow(reg)))
   reg$registry <- rep(registry, nrow(reg))
   out <- reg[registry_columns]
   rownames(out) <- NULL

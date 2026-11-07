@@ -233,7 +233,7 @@ globi_to_registry <- function(raw, registry = "globi", types = c("eats", "preysO
     res_order = res$order, res_class = res$class,
     con_genus = con$genus, con_subfamily = con$subfamily, con_family = con$family,
     con_order = con$order, con_class = con$class,
-    evidence = paste("GloBI:", d$interaction_type), citation = cit,
+    evidence = sprintf("GloBI: %s", d$interaction_type), citation = cit,
     stringsAsFactors = FALSE
   )
   reg <- reg[!duplicated(reg[c("resource", "consumer", "study_id")]), , drop = FALSE]

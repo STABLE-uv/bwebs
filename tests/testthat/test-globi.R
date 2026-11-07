@@ -54,6 +54,21 @@ test_that("globi_to_registry() keeps trophic records of the taxon queried", {
   expect_message(expect_message(globi_to_registry(raw), "compilations"), "other taxa")
 })
 
+test_that("globi_to_registry() gives an empty registry when no record is left", {
+  ranks <- "kingdom | phylum | genus"
+  raw <- data.frame(
+    source_taxon_name = "Hadra sp.", source_taxon_path = "Animalia | Mollusca | Hadra",
+    source_taxon_path_ranks = ranks, interaction_type = "eats",
+    target_taxon_name = "Cocconeis", target_taxon_path = "Chromista | Ochrophyta | Cocconeis",
+    target_taxon_path_ranks = ranks, study_citation = "Study 1",
+    query = "Asellus", query_type = "eats"
+  )
+  reg <- suppressMessages(globi_to_registry(raw))
+  expect_identical(nrow(reg), 0L)
+  expect_named(reg, registry_columns)
+  expect_identical(nrow(globi_to_registry(raw[0, ])), 0L)
+})
+
 test_that("fetch_globi() validates its input before going online", {
   expect_error(fetch_globi(character(0)), class = "bwebs_error_input")
   expect_error(fetch_globi("Asellus", cache_dir = file.path(tempdir(), "no_such_dir")), "does not exist")

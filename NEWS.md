@@ -52,6 +52,9 @@
 * `globi_to_registry()` reads placeholders of unresolved ranks
   (`"Not assigned"`, `"unclassified ..."`, `"... incertae sedis"`) as
   missing, and reads the ranks of each distinct path once.
+* `globi_to_registry()` and `as_registry()` return an empty registry when
+  no record is left (for example when no record of GloBI belongs to the
+  taxon queried), instead of failing.
 * The matching is faster and needs less memory with large registries:
   records that match no node are dropped first, the records of each name and
   rank are matched once, the node x record matrices are filled in place and
