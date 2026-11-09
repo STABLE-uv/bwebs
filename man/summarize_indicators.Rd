@@ -14,7 +14,7 @@ summarize_indicators(
 )
 }
 \arguments{
-\item{x}{An object from \code{\link[=calc_indicators]{calc_indicators()}}.}
+\item{x}{An object from \code{\link[=calc_indicators]{calc_indicators()}} or \code{\link[=calc_fluxes]{calc_fluxes()}}.}
 
 \item{indicators}{Names of the indicators to summarise; \code{NULL} (default)
 for all the numeric indicators.}
@@ -45,16 +45,18 @@ ordered by group and indicator, with the grouping columns, \code{indicator},
 }
 \description{
 \code{summarize_indicators()} summarises the indicators of \code{\link[=calc_indicators]{calc_indicators()}}
-over the draws, for every sample or for groups of samples. For a group,
-the indicator is first averaged over the samples of the group within each
-draw, and the draws of that mean are then summarised.
+or the fluxes of \code{\link[=calc_fluxes]{calc_fluxes()}} over the draws, for every sample or for
+groups of samples. For a group, the indicator is first averaged over the
+samples of the group within each draw, and the draws of that mean are then
+summarised.
 }
 \details{
 The intervals describe the uncertainty of the links given the calibration
 (and, with \code{system = "random"} in \code{\link[=sample_metawebs]{sample_metawebs()}}, the variation
 between systems, and with \code{parameter_uncertainty = TRUE} the uncertainty
-of the calibration coefficients). They do not include the sampling error
-of the community data.
+of the calibration coefficients) and, for the fluxes of populations drawn
+with each realization, that of the biomasses (\code{"biomass"}). They do not
+include the sampling error of the community data.
 }
 \examples{
 nodes <- prepare_nodes(example_taxa)

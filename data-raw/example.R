@@ -88,3 +88,32 @@ example_samples <- data.frame(
 )
 
 usethis::use_data(example_taxa, example_community, example_samples, overwrite = TRUE)
+
+# Populations for the energy fluxes -> data/example_populations.rda
+#
+# Invented, like the abundances: biomass (g of wet mass per sample) and mean
+# individual wet mass (g) of every node of each sample. Consumers: the
+# abundances times a typical wet mass of each taxon; diatoms: 2 mg of
+# periphyton per counted unit; detritus: 5 g of CPOM and 2 g of FPOM in every
+# sample. Producers and detritus have no individual mass.
+mean_mass <- c(baetis_rhodani = 3e-3, ecdyonurus = 1.5e-2, leuctra_nigra = 1e-3,
+               nemurella_pictetii = 2e-3, simulium = 1e-3, orthocladiinae = 2e-4,
+               tanypodinae = 5e-4, asellus_aquaticus = 5e-3, gammarus_pulex = 2e-2,
+               dugastella_valentina = 0.1, ancylus_fluviatilis = 2e-2, pisidium = 1e-2,
+               hydropsyche = 2e-2, rhyacophila_dorsalis = 3e-2, plectrocnemia_conspersa = 1.5e-2,
+               sialis_fuliginosa = 5e-2, cordulegaster_boltonii = 0.5)
+producers <- example_taxa$node_id[example_taxa$role == "producer"]
+pop <- example_community
+pop$mass <- unname(mean_mass[pop$node_id])
+pop$biomass <- ifelse(pop$node_id %in% producers, pop$value * 2e-3, pop$value * pop$mass)
+detritus <- data.frame(sample_id = rep(example_samples$sample_id, each = 2),
+                       node_id = rep(c("cpom", "fpom"), times = nrow(example_samples)),
+                       biomass = rep(c(5, 2), times = nrow(example_samples)),
+                       mass = NA_real_, stringsAsFactors = FALSE)
+example_populations <- rbind(pop[c("sample_id", "node_id", "biomass", "mass")], detritus)
+example_populations <- example_populations[order(example_populations$sample_id,
+                                                 example_populations$node_id,
+                                                 method = "radix"), ]
+rownames(example_populations) <- NULL
+
+usethis::use_data(example_populations, overwrite = TRUE)

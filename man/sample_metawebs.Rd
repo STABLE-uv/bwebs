@@ -86,7 +86,7 @@ matrix nodes x draws (\code{NA} for nodes without a mass), so that draw
 \eqn{d} holds the links of a web (column \eqn{d} of \code{z} and element
 \eqn{d} of \code{background$present}) and the masses of its nodes (column
 \eqn{d} of \code{masses});
-\item \code{nodes}: the nodes of the metaweb;
+\item \code{nodes}: the nodes of the metaweb (identity, role and classification);
 \item \code{settings}: the options used (with \code{masses}, the size model).
 }
 

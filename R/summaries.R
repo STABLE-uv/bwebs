@@ -3,11 +3,12 @@
 #' Summarise indicators over draws
 #'
 #' `summarize_indicators()` summarises the indicators of [calc_indicators()]
-#' over the draws, for every sample or for groups of samples. For a group,
-#' the indicator is first averaged over the samples of the group within each
-#' draw, and the draws of that mean are then summarised.
+#' or the fluxes of [calc_fluxes()] over the draws, for every sample or for
+#' groups of samples. For a group, the indicator is first averaged over the
+#' samples of the group within each draw, and the draws of that mean are then
+#' summarised.
 #'
-#' @param x An object from [calc_indicators()].
+#' @param x An object from [calc_indicators()] or [calc_fluxes()].
 #' @param indicators Names of the indicators to summarise; `NULL` (default)
 #'   for all the numeric indicators.
 #' @param samples Optional data frame with one row per sample: the column
@@ -34,8 +35,9 @@
 #' The intervals describe the uncertainty of the links given the calibration
 #' (and, with `system = "random"` in [sample_metawebs()], the variation
 #' between systems, and with `parameter_uncertainty = TRUE` the uncertainty
-#' of the calibration coefficients). They do not include the sampling error
-#' of the community data.
+#' of the calibration coefficients) and, for the fluxes of populations drawn
+#' with each realization, that of the biomasses (`"biomass"`). They do not
+#' include the sampling error of the community data.
 #'
 #' @export
 #' @examples
@@ -48,7 +50,7 @@
 summarize_indicators <- function(x, indicators = NULL, samples = NULL, by = NULL,
                                  level = 0.95, na_rm = FALSE) {
   if (!inherits(x, "bwebs_indicators")) {
-    abort_input("`x` must be created with calc_indicators().")
+    abort_input("`x` must be created with calc_indicators() or calc_fluxes().")
   }
   check_number(level, lower = 0, upper = 1, include_lower = FALSE, include_upper = FALSE)
   check_flag(na_rm)
@@ -91,14 +93,8 @@ summarize_indicators <- function(x, indicators = NULL, samples = NULL, by = NULL
     groups <- groups[group_key %in% v$.group, , drop = FALSE]
     group_key <- group_key[group_key %in% v$.group]
   }
-  deterministic <- identical(x$settings$source, "metaweb")
-  uncertainty <- if (deterministic) {
-    "not_quantified"
-  } else {
-    paste(c("link_inference",
-            if (identical(x$settings$system, "random")) "between_system",
-            if (isTRUE(x$settings$parameter_uncertainty)) "parameter"), collapse = "+")
-  }
+  deterministic <- is_deterministic(x)
+  uncertainty <- uncertainty_label(x)
   probs <- c((1 - level) / 2, (1 + level) / 2)
   rows <- vector("list", length(group_key) * length(indicators))
   k <- 0L
@@ -185,7 +181,7 @@ summarize_indicators <- function(x, indicators = NULL, samples = NULL, by = NULL
 contrast_indicators <- function(x, samples, by, reference, within = NULL, indicators = NULL,
                                 level = 0.95, na_rm = FALSE) {
   if (!inherits(x, "bwebs_indicators")) {
-    abort_input("`x` must be created with calc_indicators().")
+    abort_input("`x` must be created with calc_indicators() or calc_fluxes().")
   }
   check_string(by)
   check_number(level, lower = 0, upper = 1, include_lower = FALSE, include_upper = FALSE)
@@ -225,7 +221,7 @@ contrast_indicators <- function(x, samples, by, reference, within = NULL, indica
     strata <- strata[do.call(order, c(unname(as.list(strata)), method = "radix")), , drop = FALSE]
     strata_key <- make_key(strata, within)
   }
-  deterministic <- identical(x$settings$source, "metaweb")
+  deterministic <- is_deterministic(x)
   probs <- c((1 - level) / 2, (1 + level) / 2)
   group_mean <- function(z) {
     if (anyNA(z) && !na_rm) return(NA_real_)
@@ -284,4 +280,24 @@ contrast_indicators <- function(x, samples, by, reference, within = NULL, indica
   out$.s <- NULL
   rownames(out) <- NULL
   out
+}
+
+# One web per sample (the deterministic metaweb with fixed populations): no
+# intervals.
+is_deterministic <- function(x) {
+  identical(x$settings$source, "metaweb") && !isTRUE(x$settings$population_draws)
+}
+
+# Components of the uncertainty of the draws: the links (and, with
+# system = "random", the variation between systems and, with
+# parameter_uncertainty = TRUE, the coefficients) and, for the fluxes with
+# populations drawn with each realization, the biomasses.
+uncertainty_label <- function(x) {
+  if (is_deterministic(x)) return("not_quantified")
+  s <- x$settings
+  draws <- identical(s$source, "draws")
+  paste(c(if (draws) "link_inference",
+          if (draws && identical(s$system, "random")) "between_system",
+          if (draws && isTRUE(s$parameter_uncertainty)) "parameter",
+          if (isTRUE(s$population_draws)) "biomass"), collapse = "+")
 }

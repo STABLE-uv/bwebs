@@ -34,3 +34,24 @@ test_that("the workflow runs with the registries and calibration of Gray + GATEW
   l <- draws$links[draws$links$status == "calibrated", ]
   expect_true(all(P[cbind(l$resource, l$consumer)] > 0))
 })
+
+test_that("the workflow runs from the populations to the contrasts of the fluxes", {
+  nodes <- prepare_nodes(example_taxa)
+  mw <- build_metaweb(nodes, combine_registries(gray2015, gateway))
+  masses <- node_masses(mw, example_populations)
+  expect_identical(sum(!is.na(masses)), 17L)
+  draws <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 10, masses = masses,
+                           seed = 2026)
+  fl <- calc_fluxes(draws, example_populations, temperature = 15, engine = "internal")
+  expect_identical(nrow(fl$values), 10L * 6L)
+  # draw 10 keeps only 5 inferred links: its consumers eat mostly one another
+  # through the links of the decay, and the web has no steady state
+  expect_true(all(fl$values$status %in% c("ok", "unsolved")))
+  ok <- fl$values[fl$values$status == "ok", ]
+  expect_gt(nrow(ok), 50L)
+  expect_equal(ok$total_flux, ok$herbivory + ok$detritivory + ok$carnivory)
+  k <- contrast_indicators(fl, example_samples, by = "treatment", reference = "control",
+                           indicators = c("total_flux", "metabolism"), na_rm = TRUE)
+  # the exposed samples lose biomass of consumers: less metabolism in every draw
+  expect_lt(k$upper[k$indicator == "metabolism"], 0)
+})

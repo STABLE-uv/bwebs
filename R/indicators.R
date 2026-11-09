@@ -15,7 +15,7 @@
 #'   and macrophytes) that cannot go extinct in the robustness analysis.
 #' @param modularity If `TRUE`, compute the modularity of the best of
 #'   `louvain_runs` partitions found with the Louvain algorithm on the
-#'   undirected web (requires the igraph package).
+#'   undirected web (requires the package *igraph*, Csardi and Nepusz 2006).
 #' @param robustness If `TRUE`, compute R50: the proportion of primary
 #'   removals needed to lose at least half of the removable trophic species,
 #'   with removals in random order (mean of `robustness_reps` sequences) and
@@ -69,6 +69,10 @@
 #' The adjacency matrix must not contain `NA`. Indicators that are undefined
 #' (for example the mean number of predators when no species has predators)
 #' are `NA`.
+#'
+#' @references
+#' Csardi G, Nepusz T (2006) The *igraph* software package for complex network
+#' research. *InterJournal, Complex Systems* 1695. <https://igraph.org>
 #'
 #' @seealso [calc_indicators()] to compute them for every sample and draw.
 #' @export

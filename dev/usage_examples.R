@@ -47,6 +47,20 @@ by_treatment
 det <- calc_indicators(mw, example_community, permanent = c("cpom", "fpom"))
 summarize_indicators(det, indicators = "C", samples = example_samples, by = "treatment")
 
+# 7b. Energy fluxes of every sample in every realization: the size term and
+#     the fluxes with the masses and biomasses of the populations (in an
+#     analysis, the draws of bmassa: realization d uses draw d of both);
+#     engine = "fluxweb", the default, needs the package fluxweb
+masses <- node_masses(mw, example_populations)
+draws_m <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 50, masses = masses,
+                           seed = 2026)
+fl <- calc_fluxes(draws_m, example_populations, temperature = 15, engine = "internal")
+fl
+summarize_indicators(fl, indicators = c("total_flux", "herbivory", "detritivory", "carnivory"),
+                     samples = example_samples, by = "treatment")
+contrast_indicators(fl, example_samples, by = "treatment", reference = "control",
+                    indicators = "total_flux")
+
 # 8. Export
 out <- tempfile(fileext = ".csv")
 utils::write.csv(by_treatment, out, row.names = FALSE)

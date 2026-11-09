@@ -11,11 +11,16 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
+```{css, echo = FALSE}
+p, li { text-align: justify; }
+```
+
 ```{r setup}
 library(bwebs)
 ```
 
-This vignette goes through the whole workflow on the invented example
+This vignette goes through the whole workflow of *bwebs* (Amador Crespo
+and Rico 2026b) on the invented example
 community of the package and explains the methodological decisions behind
 each step: how links are inferred, how their probabilities are calibrated,
 how the default matching rule was chosen and how it performs on an
@@ -187,7 +192,7 @@ and consumers whose closest relatives with records are in another phylum
 get much less; with the Gray registry alone the decay mostly gives these
 pairs the rate at which the rule misses links, and the relation of the
 resource to the recorded diet barely changes it. With GloBI the rule misses
-fewer links and the decay is lower (section 9). In the validation webs every taxon eats or is
+fewer links and the decay is lower (section 10). In the validation webs every taxon eats or is
 eaten, so these probabilities may be too high for communities sampled
 independently of their diets; Tuesday Lake (section 5) is a check.
 `matching_rule(decay = FALSE)` gives these pairs probability 0, as in
@@ -249,7 +254,7 @@ taxon itself scored worst. With the Gray registry alone the skill of every
 rule is slightly negative: a third of the recorded links are not inferred.
 
 The eight main rules were then scored with records of Global Biotic
-Interactions (GloBI, section 9) for the consumers of the validation webs,
+Interactions (GloBI, section 10) for the consumers of the validation webs,
 alone and combined with the Gray registry. When each web was rebuilt, the
 GloBI studies holding at least 10% of its links (copies of that web in
 other compilations) were left out too (`validate_rule(exclusions = )`):
@@ -284,7 +289,7 @@ GATEWAy the best one that the package can include
 ## 5. An independent test: Tuesday Lake
 
 The Tuesday Lake food webs of 1984 and 1986 (Cohen et al. 2003; Jonsson et
-al. 2005), from the cheddar package (Hudson et al. 2013), are an independent
+al. 2005), from the *cheddar* package (Hudson et al. 2013), are an independent
 test: study 12 of the registry is Tuesday Lake, so it was left out of the
 registry and of the validation webs while the rules and the sources were
 compared, and so were the GloBI studies that copy it.
@@ -415,7 +420,8 @@ size_model
 The masses can be one per node, as here for Tuesday Lake (the unit does not
 matter, only the ratios), or a matrix with one row per node and one column
 per draw. With the masses of the draws of a biomass model (such as
-`bmassa::simulate()`), each realization of the web uses the masses of its
+`simulate()` of *bmassa*; Amador Crespo and Rico 2026a), each realization
+of the web uses the masses of its
 own draw, so that the links of a realization and the masses and biomasses of
 its taxa come from the same draw:
 
@@ -457,7 +463,7 @@ head(draws_m$masses[, d])
 `calc_indicators()` builds the web of each sample in each draw (the nodes
 present plus the permanent resources) and computes the indicators of
 `web_indicators()` on the web without cannibalism and without isolated nodes,
-aggregated into trophic species. Modularity (with igraph) and robustness are
+aggregated into trophic species. Modularity (with *igraph*; Csardi and Nepusz 2006) and robustness are
 optional because they are slower.
 
 ```{r}
@@ -495,7 +501,78 @@ summarize_indicators(det, indicators = c("S", "C", "TL_mean"),
                      samples = example_samples, by = "treatment")[, 1:4]
 ```
 
-## 9. GloBI and other registries
+## 9. Energy fluxes
+
+`calc_fluxes()` computes the energy fluxes of every sample in every
+realization with the food-web energetics approach of the *fluxweb* package
+(Gauzens et al. 2019): at steady state, the energy a consumer assimilates
+from its resources equals its metabolic losses plus what its consumers take
+from it. The losses come from the body mass of each population and the
+temperature (Brown et al. 2004), and the efficiencies from the type of
+resource (Polazzo et al. 2023); any of them can be replaced:
+
+```{r}
+flux_parameters()
+```
+
+Brown et al. (2004) estimated an activation energy of 0.69 eV across all
+groups, the value of Polazzo et al. (2023), but fitted the intercepts to
+rates corrected for temperature with 0.63 eV, the value used by default.
+`flux_parameters("polazzo_2023")` uses 0.69 eV, with which the losses, and
+so all the fluxes, are about 11 times lower at 20 °C.
+
+The populations give the biomass of every node of each sample (g of wet
+mass per unit of the sampling basis, here per sample) and the mean
+individual mass of the consumers (g of wet mass); a node can have several
+populations, such as the life stages of a taxon, whose losses are added.
+`node_masses()` gives the masses of the nodes for the size term, so that
+realization `d` has the links drawn with the masses of draw `d` and the
+biomasses of the same draw:
+
+```{r}
+masses <- node_masses(mw, example_populations)
+draws_f <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 100, masses = masses,
+                           seed = 2026)
+fl <- calc_fluxes(draws_f, example_populations, temperature = 15, engine = "internal")
+fl
+contrast_indicators(fl, example_samples, by = "treatment", reference = "control",
+                    indicators = c("total_flux", "herbivory", "detritivory", "carnivory"),
+                    na_rm = TRUE)[, c(3:8, 10)]
+```
+
+`engine = "fluxweb"`, the default, solves the same equations with
+`fluxweb::fluxing()`; `engine = "internal"` gives the same fluxes without
+*fluxweb*. The fluxes are in W (J/s) per unit of the sampling basis.
+
+A consumer that no path of links reaches from a producer or detritus in a
+realization is left out of its fluxes (`n_unsupported`). A realization whose
+consumers take most of their diet from one another, which happens in draws
+with few inferred links, where the links of the taxonomic decay among
+consumers make up most diets, has no steady state (`status = "unsolved"`):
+assimilation loses energy at every step, so such loops cannot sustain
+themselves. These realizations are energetically implausible, and
+`na_rm = TRUE` leaves them out of the summaries:
+
+```{r}
+table(fl$values$status)
+```
+
+With *bmassa*, the draws of `simulate()` hold the mass of every
+population of the abundance table in each draw, with the errors shared as
+in its totals; `calc_fluxes()` takes them directly, together with a table of
+the biomasses of producers and detritus, and the abundances of all the
+groups must share the sampling basis:
+
+```{r, eval = FALSE}
+est <- bmassa::estimate_biomass(abundance, taxa, lengths)  # with sample_id and node_id
+sim <- simulate(bmassa::convert_currency(est, to = "wet_mass", unit = "mg"), nsim = 1000,
+                seed = 1)
+draws <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 1000,
+                         masses = node_masses(mw, sim), seed = 1)
+fl <- calc_fluxes(draws, list(sim, basal_biomass), temperature = temperature_by_sample)
+```
+
+## 10. GloBI and other registries
 
 `fetch_globi()` downloads trophic interactions from Global Biotic
 Interactions and `globi_to_registry()` converts them (an internet connection
@@ -535,6 +612,18 @@ package).
 
 ## References
 
+Amador Crespo P, Rico A (2026a). *bmassa*: Biomass of Aquatic Taxa from
+Abundances and Body Sizes. R package version 0.5.0.
+<https://github.com/STABLE-uv/bmassa>
+
+Amador Crespo P, Rico A (2026b). *bwebs*: Bayesian Food Webs from Compiled
+Trophic Interactions. R package version 0.4.0.
+<https://github.com/STABLE-uv/bwebs>
+
+Brown JH, Gillooly JF, Allen AP, Savage VM, West GB (2004). Toward a
+metabolic theory of ecology. *Ecology*, 85, 1771–1789.
+<https://doi.org/10.1890/03-9000>
+
 Brose U, et al. (2019). Predator traits determine
 food-web architecture across ecosystems. *Nature Ecology & Evolution*, 3,
 919–927. <https://doi.org/10.1038/s41559-019-0899-x> (GATEWAy version 1.0,
@@ -545,16 +634,29 @@ using the food web, species abundance, and body size. *Proceedings of the
 National Academy of Sciences of the USA*, 100(4), 1781–1786.
 <https://doi.org/10.1073/pnas.232715699>
 
+Csardi G, Nepusz T (2006). The *igraph* software package for complex
+network research. *InterJournal, Complex Systems*, 1695.
+<https://igraph.org>
+
+Gauzens B, Barnes A, Giling DP, Hines J, Jochum M, Lefcheck JS, Rosenbaum
+B, Wang S, Brose U (2019). *fluxweb*: an R package to easily estimate energy
+fluxes in food webs. *Methods in Ecology and Evolution*, 10, 270–279.
+<https://doi.org/10.1111/2041-210X.13109>
+
 Gray C, Figueroa DH, Hudson LN, Ma A, Perkins D, Woodward G (2015). Joining
 the dots: an automated method for constructing food webs from compendia of
 published interactions. *Food Webs*, 5, 11–20.
 <https://doi.org/10.1016/j.fooweb.2015.09.001>
 
 Hudson LN, Emerson R, Jenkins GB, Layer K, Ledger ME, Pichler DE, Thompson
-MSA, O'Gorman EJ, Woodward G, Reuman DC (2013). Cheddar: analysis and
+MSA, O'Gorman EJ, Woodward G, Reuman DC (2013). *Cheddar*: analysis and
 visualisation of ecological communities in R. *Methods in Ecology and
 Evolution*, 4(1), 99–104. <https://doi.org/10.1111/2041-210X.12005>
 
 Jonsson T, Cohen JE, Carpenter SR (2005). Food webs, body size, and species
 abundance in ecological community description. *Advances in Ecological
 Research*, 36, 1–84. <https://doi.org/10.1016/S0065-2504(05)36001-6>
+
+Polazzo F, Hermann M, Crettaz-Minaglia M, Rico A (2023). Impacts of extreme
+climatic events on trophic network complexity and multidimensional
+stability. *Ecology*, 104, e3951. <https://doi.org/10.1002/ecy.3951>

@@ -13,14 +13,16 @@ knitr::opts_chunk$set(
 )
 ```
 
-# bwebs <picture><source media="(prefers-color-scheme: dark)" srcset="man/figures/logo-dark.png"><img src="man/figures/logo.png" align="right" height="139" alt="bwebs logo" /></picture>
+# *bwebs* <picture><source media="(prefers-color-scheme: dark)" srcset="man/figures/logo-dark.png"><img src="man/figures/logo.png" align="right" height="278" alt="bwebs logo" /></picture>
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/STABLE-uv/bwebs/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/STABLE-uv/bwebs/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-bwebs builds food webs for the samples of a community (taxa with abundances
+<div align="justify">
+
+*bwebs* (Amador Crespo and Rico 2026b) builds food webs for the samples of a community (taxa with abundances
 or biomasses in sites and dates) from compilations of published trophic
 interactions, and quantifies how uncertain those webs are. It infers the
 potential links among the taxa with the WebBuilder logic of Gray et al.
@@ -33,7 +35,9 @@ masses are known, samples plausible webs from those probabilities and
 summarises their
 topological indicators (connectance, trophic levels, omnivory, trophic
 similarity, robustness...) with credible intervals, for every sample and for
-contrasts between groups of samples. The matching rule and the way of
+contrasts between groups of samples, together with the energy fluxes of
+every sampled web, computed from the biomasses and body masses of its taxa
+in the same draw. The matching rule and the way of
 combining sources used by default were chosen among 21 rules and several
 sources (the Gray et al. registry, Global Biotic Interactions, the
 freshwater food webs of GATEWAy and their combinations) by cross-validated
@@ -45,20 +49,25 @@ GATEWAy version 1.0 ([Brose et al. 2019](https://doi.org/10.1038/s41559-019-0899
 CC BY 4.0), the calibrations of the Gray
 registry alone, combined with GATEWAy and combined with GloBI, the
 effect of body size on predation fitted to the aquatic webs of GATEWAy, the
-Tuesday Lake food webs of 1984 and 1986 (from the cheddar package), and
+Tuesday Lake food webs of 1984 and 1986 (from the *cheddar* package; Hudson
+et al. 2013), and
 downloads interactions from Global Biotic Interactions (GloBI).
 
 ## Installation
 
-From GitHub, with its dependencies and the vignette:
+From GitHub with *remotes* (Csárdi et al. 2023), with its dependencies and
+the vignette:
 
 ```r
 # install.packages("remotes")
 remotes::install_github("STABLE-uv/bwebs", dependencies = TRUE, build_vignettes = TRUE)
 ```
 
-bwebs needs R (>= 3.6.0) and the packages MASS, stats, utils and withr;
-igraph is needed only for modularity.
+*bwebs* needs R (>= 3.6.0) and the packages *MASS* (Venables and Ripley
+2002), *stats* and *utils* (R Core Team 2024) and
+*withr* (Hester et al. 2022); *igraph* (Csardi and Nepusz 2006) is needed
+only for modularity, and *fluxweb* (Gauzens et al. 2019) for the energy
+fluxes with `calc_fluxes(engine = "fluxweb")`, the default.
 
 ## Example
 
@@ -100,6 +109,18 @@ summarize_indicators(ind, indicators = c("S", "C", "TL_mean"), samples = example
                      by = "treatment", na_rm = TRUE)[, c(1:7, 13)]
 contrast_indicators(ind, example_samples, by = "treatment", reference = "control",
                     indicators = c("S", "C", "TL_mean"), na_rm = TRUE)[, c(1, 3:8, 10)]
+
+# 7. Energy fluxes (W per sample) of every sample in every realization, from
+#    the biomasses and body masses of the populations: realization d has the
+#    links drawn with the masses of draw d and the biomasses of draw d
+#    (engine = "fluxweb", the default, needs the fluxweb package)
+masses <- node_masses(mw, example_populations)
+draws_f <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 100, masses = masses,
+                           seed = 2026)
+fl <- calc_fluxes(draws_f, example_populations, temperature = 15, engine = "internal")
+contrast_indicators(fl, example_samples, by = "treatment", reference = "control",
+                    indicators = c("total_flux", "herbivory", "detritivory"),
+                    na_rm = TRUE)[, c(3:8, 10)]
 ```
 
 ## Methods and decisions
@@ -193,6 +214,23 @@ contrast_indicators(ind, example_samples, by = "treatment", reference = "control
   0.21 with Gray + GATEWAy).
 * **Indicators** (`web_indicators()`): on the web without cannibalism and
   without isolated nodes, aggregated into trophic species.
+* **Energy fluxes** (`calc_fluxes()`, `flux_parameters()`): the food-web
+  energetics approach of *fluxweb* (Gauzens et al. 2019) in every
+  realization: at steady state, what a consumer assimilates equals its
+  metabolic losses plus what its consumers take from it. The losses come
+  from the body mass and the temperature (Brown et al. 2004, with the
+  activation energy with which their intercepts were fitted, 0.63 eV) and
+  are summed over the populations of each node (its life stages, for
+  instance); the efficiencies depend on the type of resource (Polazzo et
+  al. 2023), and the preferences of a consumer on the biomass of its
+  resources. Realization `d` has the links of draw `d` and the biomasses
+  and masses of draw `d` of the populations (such as the draws of *bmassa*;
+  Amador Crespo and Rico 2026a),
+  so the intervals of the fluxes include both uncertainties
+  (`node_masses()` gives the masses of the same draws to the size term).
+  Consumers that no path of links reaches from a producer or detritus are
+  left out, and realizations without a steady state (consumers eating
+  mostly one another) are reported (`status = "unsolved"`).
 
 Decisions to make for each data set: which studies are used for the
 calibration (`validate_rule(sources = )`) and which of them describe the
@@ -203,16 +241,17 @@ vignette (`vignette("bwebs")`) and the help pages.
 
 ## Status
 
-Version 0.3.0, experimental and not on CRAN.
+Version 0.4.0, experimental and not on CRAN.
 
 * The metaweb engine and the indicators reproduce exactly the code of the
   original analysis (1319 links of a 108-node metaweb; 27 indicators of 120
   webs) with the rule of that analysis (`matching_rule(min_partners = 1)`).
-* The maximum-likelihood fit agrees with `lme4::glmer(nAGQ = 20)`; the
+* The maximum-likelihood fit agrees with `glmer(nAGQ = 20)` of *lme4*
+  (Bates et al. 2015); the
   Bayesian fit agrees with the posterior computed on a grid for a small
   problem.
-* Indicators are checked against hand calculations and igraph.
-* `R CMD check --as-cran` runs without errors and with all tests passing
+* Indicators are checked against hand calculations and *igraph*.
+* `R CMD check` runs without errors or warnings, with all tests passing,
   on Ubuntu 24.04 with R 4.3.3; GitHub Actions runs `R CMD check` on macOS,
   Windows and Ubuntu.
 * The GloBI download used for the comparison of sources and for
@@ -224,6 +263,13 @@ Version 0.3.0, experimental and not on CRAN.
 
 ## Known limitations
 
+* The energy fluxes have not been compared with measured fluxes. Their
+  activation energy is by default the one with which Brown et al. (2004)
+  fitted the intercepts (0.63 eV), not the slope across all groups that
+  Polazzo et al. (2023) used (0.69 eV, `flux_parameters("polazzo_2023")`),
+  with which the losses, and so all the fluxes, are about 11 times lower at
+  20 °C; relative fluxes within a web at one temperature do not change. The
+  efficiency of detritus is that of Lang et al. (2017).
 * Without body masses the taxonomic decay knows nothing of size: for
   consumers whose relatives have few records it spreads probability over
   pairs that size would exclude (rotifers eating fish), so in the sampled
@@ -256,13 +302,12 @@ Version 0.3.0, experimental and not on CRAN.
   describe the same systems (`validate_rule(groups = )`).
 * The links of GATEWAy were established in different ways (gut contents,
   the literature, expert knowledge), and some of its webs have coarse diets
-  (in the Adirondack lakes of Havens 1992, 59% of the predator-prey pairs
-  are links): added to Gray + GloBI it made the cross-validation worse. The
-  five chalk streams of Gray et al. (2015) and Thompson et al. (2017), built
-  partly with WebBuilder from the Gray registry, are left out of `gateway`
-  but are in the GloBI download; without them the cross-validation of Gray
-  + GloBI was worse, perhaps in part because they carry information of the
-  validation webs.
+  (in its 50 Adirondack lakes, 59% of the predator-prey pairs are links):
+  added to Gray + GloBI it made the cross-validation worse. Its five chalk
+  streams built partly with WebBuilder from the Gray registry (Gray et al.
+  2015) are left out of `gateway` but are in the GloBI download; without
+  them the cross-validation of Gray + GloBI was worse, perhaps in part
+  because they carry information of the validation webs.
 * `gray2015_globi_calibration` was fitted with the GloBI records downloaded
   for the consumers of the validation webs, of Tuesday Lake and of the
   azoxystrobin experiment of Amador et al. (2024); a metaweb built with
@@ -270,3 +315,76 @@ Version 0.3.0, experimental and not on CRAN.
 * The threshold of five partners was chosen by a margin smaller than its
   standard error; `matching_rule(min_partners = 1)` gives the rule of the
   original analysis.
+
+## References
+
+Amador P, Vega C, Navarro Pacheco NI, Moratalla-Lopez J, Palacios J,
+Crettaz Minaglia MC, Lopez I, Díaz M, Rico A (2024). Effects of the
+fungicide azoxystrobin in two habitats representative of Mediterranean
+coastal wetlands: a mesocosm experiment. *Aquatic Toxicology*, 267, 106828.
+<https://doi.org/10.1016/j.aquatox.2023.106828>
+
+Amador Crespo P, Rico A (2026a). *bmassa*: Biomass of Aquatic Taxa from
+Abundances and Body Sizes. R package version 0.5.0.
+<https://github.com/STABLE-uv/bmassa>
+
+Amador Crespo P, Rico A (2026b). *bwebs*: Bayesian Food Webs from Compiled
+Trophic Interactions. R package version 0.4.0.
+<https://github.com/STABLE-uv/bwebs>
+
+Bates D, Mächler M, Bolker B, Walker S (2015). Fitting linear mixed-effects
+models using *lme4*. *Journal of Statistical Software*, 67(1), 1–48.
+<https://doi.org/10.18637/jss.v067.i01>
+
+Brose U, et al. (2019). Predator traits determine food-web architecture
+across ecosystems. *Nature Ecology & Evolution*, 3, 919–927.
+<https://doi.org/10.1038/s41559-019-0899-x>
+
+Brown JH, Gillooly JF, Allen AP, Savage VM, West GB (2004). Toward a
+metabolic theory of ecology. *Ecology*, 85, 1771–1789.
+<https://doi.org/10.1890/03-9000>
+
+Csardi G, Nepusz T (2006). The *igraph* software package for complex
+network research. *InterJournal, Complex Systems*, 1695.
+<https://igraph.org>
+
+Csárdi G, Hester J, Wickham H, Chang W, Morgan M, Tenenbaum D (2023).
+*remotes*: R Package Installation from Remote Repositories, Including
+'GitHub'. R package version 2.4.2.1.
+<https://CRAN.R-project.org/package=remotes>
+
+Gauzens B, Barnes A, Giling DP, Hines J, Jochum M, Lefcheck JS, Rosenbaum B,
+Wang S, Brose U (2019). *fluxweb*: an R package to easily estimate energy
+fluxes in food webs. *Methods in Ecology and Evolution*, 10, 270–279.
+<https://doi.org/10.1111/2041-210X.13109>
+
+Gray C, Figueroa DH, Hudson LN, Ma A, Perkins D, Woodward G (2015). Joining
+the dots: an automated method for constructing food webs from compendia of
+published interactions. *Food Webs*, 5, 11–20.
+<https://doi.org/10.1016/j.fooweb.2015.09.001>
+
+Hester J, Henry L, Müller K, Ushey K, Wickham H, Chang W (2022). *withr*:
+Run Code 'With' Temporarily Modified Global State. R package version 2.5.0.
+<https://CRAN.R-project.org/package=withr>
+
+Hudson LN, Emerson R, Jenkins GB, Layer K, Ledger ME, Pichler DE, Thompson
+MSA, O'Gorman EJ, Woodward G, Reuman DC (2013). *Cheddar*: analysis and
+visualisation of ecological communities in R. *Methods in Ecology and
+Evolution*, 4(1), 99–104. <https://doi.org/10.1111/2041-210X.12005>
+
+Lang B, Ehnes RB, Brose U, Rall BC (2017). Temperature and consumer type
+dependencies of energy flows in natural communities. *Oikos*, 126,
+1717–1725. <https://doi.org/10.1111/oik.04419>
+
+Polazzo F, Hermann M, Crettaz-Minaglia M, Rico A (2023). Impacts of extreme
+climatic events on trophic network complexity and multidimensional
+stability. *Ecology*, 104, e3951. <https://doi.org/10.1002/ecy.3951>
+
+R Core Team (2024). R: A Language and Environment for Statistical
+Computing. R Foundation for Statistical Computing, Vienna, Austria.
+<https://www.R-project.org/>
+
+Venables WN, Ripley BD (2002). *Modern Applied Statistics with S*, 4th
+edition. Springer, New York.
+
+</div>

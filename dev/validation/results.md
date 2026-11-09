@@ -1,4 +1,6 @@
-# Validation — bwebs 0.2.0
+# Validation — *bwebs* 0.2.0
+
+<div align="justify">
 
 Results obtained on 2026-11-03 with the development version 0.1.0.9000 (the
 same code as version 0.2.0), on Ubuntu 24.04 with R 4.3.3.
@@ -19,7 +21,7 @@ the reanalysis byte for byte (`metaweb_adjacency.csv`, `metaweb_edges.csv`).
 
 | Check | Result |
 |---|---|
-| Maximum likelihood fit (`method = "ml"`) against `lme4::glmer(nAGQ = 20)` on the counts of the bundled calibration (default rule, 13 webs; `dev/validation/calibration_lme4.R`) | coefficients equal to within 3e-6; standard errors to within 7e-6; σ 1.399165 against 1.399169 |
+| Maximum likelihood fit (`method = "ml"`) against `glmer(nAGQ = 20)` of *lme4* (Bates et al. 2015) on the counts of the bundled calibration (default rule, 13 webs; `dev/validation/calibration_lme4.R`) | coefficients equal to within 3e-6; standard errors to within 7e-6; σ 1.399165 against 1.399169 |
 | Posterior (bundled calibration) against maximum likelihood | posterior means 0.13 above the estimates in every class; posterior standard deviations 0.36 against standard errors 0.40; posterior mean of σ 1.58 against 1.40 |
 | Marginal likelihood against numerical integration (`integrate()`) | equal with tolerance 1e-8 (test) |
 | Recovery of simulated parameters (12 webs, 3 classes) | within 4 standard errors (test) |
@@ -95,7 +97,7 @@ mainly because of webs 27 (exact 23/85, genus 375/561) and 50 (31/114 against
 43/91); the model assumes the same class effect in every web. In the
 exploratory prototype, without groups, the number of studies that support a
 link did not improve the prediction (coefficient −0.06, standard error 0.05,
-with lme4).
+with *lme4*).
 
 ## Second phase: Bayesian calibration
 
@@ -423,7 +425,7 @@ is 1.004 (Gray) and 1.003 (Gray + GloBI), with effective sample sizes above
   expected in webs 27 and 13.
 - The size of the web explains part of it, as expected from the decrease of
   connectance with the number of species: with log(number of nodes) as a
-  covariate (`dev/validation/decay_role.R`: lme4::glmer, leave one system
+  covariate (`dev/validation/decay_role.R`: `glmer()` of *lme4*, leave one system
   out, probabilities in a new system) the coefficient is −0.62 with Gray +
   GloBI, the standard deviation of the web effect falls from 0.98 to 0.73
   and the squared error over the pairs not inferred from 473 to 445 (477
@@ -485,7 +487,7 @@ taxa: without isolated taxa and without aggregation into trophic species):
   with Gray + GloBI, 0.95 → 0.86 with Gray + GATEWAy, 0.76 → 0.58 with
   Gray; 0.47–0.50 observed), but the top taxa rise above the observed ones
   (0.06–0.09 against 0.02–0.04) and the mean trophic level falls slightly.
-  With the first size term (curve of Brose et al. 2005 and cheddar, optimum
+  With the first size term (curve of Brose et al. 2005 and *cheddar*, optimum
   120 times, weights 0.5 and 10) the omnivores fell further (0.61 with Gray
   + GloBI) but the links of fish to zooplankton (median log10 mass ratio
   4.7 in 1984, against 2.1 for the invertebrate predators) were removed,
@@ -532,7 +534,8 @@ all have probability 0):
 
 Webs with the body masses of consumers and resources: those of Brose et al.
 (2005; `bodysizes_2008.txt`: Grand Cariçaie, Celtic Sea, Benguela,
-Broadstone, the Frome, Tuesday Lake) and of the cheddar package (Broadstone
+Broadstone, the Frome, Tuesday Lake) and of the *cheddar* package (Hudson et
+al. 2013; Broadstone
 Stream, the two Mill Stream channels of Ledger et al. 2012, the ten streams
 of Layer et al. 2010 with masses, Tuesday Lake 1984 and 1986). Size term:
 within-consumer effect of x = log10(M_consumer / M_resource) on the links
@@ -685,7 +688,7 @@ the four Icelandic streams.
 | Gray + GloBI + GATEWAy, without them | 0.2015 | 0.048 | 461 | 725 | 0.1481; 0.1563 | 0.1452; 0.1508 |
 
 (Tuesday Lake with the masses: the size term of the first selection, curve
-of Brose et al. 2005 and cheddar with weights 0.5 and 10.)
+of Brose et al. 2005 and *cheddar* with weights 0.5 and 10.)
 
 - With the Gray registry, GATEWAy improves the cross-validation (−0.0041,
   se 0.0030, 7 of 12 webs better), mostly where its webs have relatives of
@@ -705,13 +708,13 @@ of Brose et al. 2005 and cheddar with weights 0.5 and 10.)
 
 ### Size term with the masses of GATEWAy (`size_gateway.R`)
 
-With the masses of GATEWAy, Brose et al. (2005) and cheddar (by name, then
+With the masses of GATEWAy, Brose et al. (2005) and *cheddar* (by name, then
 genus), all 12 validation webs other than Tuesday Lake have masses for at
 least 60% of their consumers (the fewest, web 11, 71%; seven webs in the
 first selection). Curves fitted with
 `size_curve_fit()` (one intercept per consumer profiled out; the estimates
 of `glm()`) to the webs of the other systems: Brose et al. (2005) and
-cheddar (as in the first selection), the freshwater webs of GATEWAy, its
+*cheddar* (as in the first selection), the freshwater webs of GATEWAy, its
 aquatic webs (with the marine ones) or all its webs; one curve or one per
 kind of predator (invertebrate, vertebrate); weights 0 to 1 on the inferred
 links and 1 to 30 on the pairs of the decay. Curves fitted to all the webs
@@ -719,7 +722,7 @@ of each source but Tuesday Lake:
 
 | Curve | Pairs (links) | x | x² | Optimum (consumer / prey) |
 |---|---|---|---|---|
-| Brose et al. (2005) and cheddar | 90,097 (7,965) | 0.66 | −0.162 | 110 |
+| Brose et al. (2005) and *cheddar* | 90,097 (7,965) | 0.66 | −0.162 | 110 |
 | GATEWAy, freshwater | 17,112 (6,125) | 1.05 | −0.094 | 400,000 |
 | GATEWAy, aquatic | 491,829 (47,467) | 0.50 | −0.059 | 17,000 |
 | GATEWAy, every ecosystem | 1,093,988 (154,750) | 0.40 | −0.075 | 440 |
@@ -735,8 +738,8 @@ made without each web and scored on it):
 | GATEWAy aquatic, one per kind of predator, up to 0.5 | 0.5, 1 | −0.0058 | −0.0048 (0.0053), 9 of 12 |
 | GATEWAy, every ecosystem, one curve, up to 0.5 | 0.5, 3 | −0.0054 | −0.0047 (0.0048), 9 of 12 |
 | decay only (no weight on the inferred links), GATEWAy aquatic | 0, 1 | −0.0029 | −0.0029 (0.0014), 9 of 12 |
-| Brose et al. (2005) and cheddar, up to 0.25 | 0.25, 1 | −0.0035 | −0.0028 (0.0041), 8 of 12 |
-| the first default (Brose et al. and cheddar; 0.5, 10), fixed | | −0.0021 (se 0.0076), 8 of 12 | |
+| Brose et al. (2005) and *cheddar*, up to 0.25 | 0.25, 1 | −0.0035 | −0.0028 (0.0041), 8 of 12 |
+| the first default (Brose et al. and *cheddar*; 0.5, 10), fixed | | −0.0021 (se 0.0076), 8 of 12 | |
 
 - Three webs whose recorded links are mostly predation (11, a pond with
   fish; 46, Broadstone; 59, Skipwith Pond: 96, 148 and 275 of their 186,
@@ -912,3 +915,20 @@ Scripts: `dev/validation/calibration_lme4.R`, `dev/validation/web_coverage.R`,
 the original code (`dev/reference/compare_metaweb.R`,
 `dev/reference/compare_indicators.R`) need a local copy of the original
 project, which is not distributed.
+
+## R packages cited
+
+Amador Crespo P, Rico A (2026). *bwebs*: Bayesian Food Webs from Compiled
+Trophic Interactions. R package version 0.4.0.
+<https://github.com/STABLE-uv/bwebs>
+
+Bates D, Mächler M, Bolker B, Walker S (2015). Fitting linear mixed-effects
+models using *lme4*. *Journal of Statistical Software*, 67(1), 1–48.
+<https://doi.org/10.18637/jss.v067.i01>
+
+Hudson LN, Emerson R, Jenkins GB, Layer K, Ledger ME, Pichler DE, Thompson
+MSA, O'Gorman EJ, Woodward G, Reuman DC (2013). *Cheddar*: analysis and
+visualisation of ecological communities in R. *Methods in Ecology and
+Evolution*, 4(1), 99–104. <https://doi.org/10.1111/2041-210X.12005>
+
+</div>

@@ -1,3 +1,53 @@
+# bwebs 0.4.0
+
+## New features
+
+* Energy fluxes (`calc_fluxes()`): the food-web energetics approach of the
+  *fluxweb* package (Gauzens et al. 2019) in every realization of
+  `sample_metawebs()` and every sample. Realization `d` has the links of draw
+  `d` and the biomasses and body masses of draw `d` of the populations, so
+  that the intervals of the fluxes carry the uncertainty of the links and
+  that of the biomasses. The populations are a data frame (biomass and mean
+  individual mass in g of wet mass, optionally by draw), a simulation of
+  *bmassa* (Amador Crespo and Rico 2026; `simulate()`, whose masses are
+  converted to g) or a list of them;
+  the losses of each population (from its mass and the temperature of its
+  sample) are added by node. Results: total flux, herbivory, detritivory,
+  carnivory and the losses of the consumers per sample and realization
+  (optionally per node and per link), summarised by `summarize_indicators()`
+  and `contrast_indicators()` (uncertainty `"biomass"` when the populations
+  are drawn). `engine = "fluxweb"` (default) calls `fluxweb::fluxing()`;
+  `engine = "internal"` solves the same equations without *fluxweb*.
+  Consumers that no path of links reaches from a producer or detritus in a
+  realization are left out of its fluxes (`n_unsupported`), and webs without
+  a steady state are reported (`status = "unsolved"`).
+* `flux_parameters()`: the metabolic rate per gram of wet mass,
+  exp(c - 0.29 log(M) - E / kT) (Brown et al. 2004; the intercepts c are
+  logarithms, although Polazzo et al. 2023 and the vignette of *fluxweb* write
+  them as multipliers), with the intercepts by metabolic type (unicellular
+  15.85, invertebrate 17.17, fish 18.47) and the assimilation efficiencies
+  0.906 for animal resources and 0.77 for producers of Polazzo et al.
+  (2023), plus the intercepts of Gauzens et al. (2019) for other ectotherm
+  vertebrates (18.18) and endotherms (19.50) and 0.158 for detritus (Lang
+  et al. 2017). The activation energy is by default 0.63 eV, the value with
+  which Brown et al. (2004) fitted the intercepts (`set = "brown_2004"`);
+  `set = "polazzo_2023"` uses 0.69 eV, their slope across all groups, as
+  Polazzo et al. (2023), with which the losses are about 11 times lower at
+  20 °C. Any of them can be replaced. The metabolic type of each consumer
+  comes from its class and phylum (`metabolic_types` replaces it).
+* `node_masses()`: the mean individual mass of every node in every draw of
+  its populations (total biomass over total individuals), the `masses` of
+  `sample_metawebs()` for the size term of each draw.
+* `example_populations`: invented biomasses and masses of the example
+  community, detritus included.
+
+## Other changes
+
+* The draws of `sample_metawebs()` keep the classification of the nodes
+  (`nodes`), from which `calc_fluxes()` takes their metabolic types.
+* README and vignette: justified text, the names of R packages in italics
+  with their references, and a logo twice as large.
+
 # bwebs 0.3.0
 
 ## Changes that alter results
@@ -36,7 +86,7 @@
   links and 1 for the pairs of the decay) are those that gave the best
   validation by folds of the 12 validation webs with body masses, left out
   by system, among curves fitted to the webs of Brose et al. (2005) and
-  cheddar or to those of GATEWAy, one curve or one per kind of predator:
+  *cheddar* or to those of GATEWAy, one curve or one per kind of predator:
   their mean Brier score went down by 0.006 (9 of 12 webs better; 0.008 with
   the Gray registry, 0.005 with Gray + GloBI, 0.006 with Gray + GATEWAy), and
   that of Tuesday Lake from 0.140 to 0.137 with Gray + GloBI and from 0.149
@@ -133,7 +183,8 @@
   food web.
 * Data: `tuesday_lake_taxa`, `tuesday_lake_community` and
   `tuesday_lake_links`, the Tuesday Lake food webs of 1984 and 1986 (from the
-  cheddar package), as an independent test. Study 12 of `gray2015` is Tuesday
+  *cheddar* package; Hudson et al. 2013), as an independent test. Study 12
+  of `gray2015` is Tuesday
   Lake and must be left out of the registry for that test.
 * `validate_rule()` and `compare_rules()` gain `train_registries` (validate
   one registry, such as GloBI, on the webs of another) and `exclusions`

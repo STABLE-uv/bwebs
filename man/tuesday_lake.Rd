@@ -14,7 +14,7 @@ of \code{\link[=prepare_nodes]{prepare_nodes()}}: \code{node_id}, \code{taxon} (
 \code{subfamily}, \code{family}, \code{order}, \code{class} and \code{phylum}, aligned with the
 taxonomy of \link{gray2015} (the rotifer class is Eurotatoria, as in the
 registry), plus \code{category} (\code{"producer"}, \code{"invertebrate"}, \code{"vert.ecto"})
-and \code{name} (the node name in cheddar). Two producers, unclassified
+and \code{name} (the node name in \emph{cheddar}). Two producers, unclassified
 flagellates and microflagellates, are non-taxonomic nodes.
 
 \code{tuesday_lake_community}: a data frame with 113 rows (one per year and
@@ -33,9 +33,9 @@ An object of class \code{data.frame} with 113 rows and 4 columns.
 An object of class \code{data.frame} with 510 rows and 3 columns.
 }
 \source{
-Communities TL84 and TL86 of the cheddar R package (Hudson et al.
+Communities TL84 and TL86 of the \emph{cheddar} R package (Hudson et al.
 2013; version 0.1-639, BSD 2-Clause licence, see the file \code{COPYRIGHTS}
-of bwebs), from Cohen et al. (2003) and Jonsson et al. (2005); see
+of \emph{bwebs}), from Cohen et al. (2003) and Jonsson et al. (2005); see
 \code{data-raw/tuesday_lake.R}.
 }
 \usage{
@@ -49,7 +49,8 @@ tuesday_lake_links
 The pelagic communities of Tuesday Lake (Michigan, USA) sampled in 1984 and
 1986: 82 taxa (50 producers, 29 invertebrates and 3 fish), their numerical
 abundance and body mass, and the observed trophic links of each year (269
-in 1984, 241 in 1986), as compiled in the cheddar package. In bwebs they
+in 1984, 241 in 1986), as compiled in the \emph{cheddar} package (Hudson et al.
+2013). In \emph{bwebs} they
 serve as an independent test of the construction of food webs: the
 registry used to build them must not contain study 12 of \link{gray2015}, which
 is Tuesday Lake.
@@ -61,7 +62,7 @@ National Academy of Sciences of the USA}, 100(4), 1781--1786.
 \doi{10.1073/pnas.232715699}
 
 Hudson LN, Emerson R, Jenkins GB, Layer K, Ledger ME, Pichler DE, Thompson
-MSA, O'Gorman EJ, Woodward G, Reuman DC (2013). Cheddar: analysis and
+MSA, O'Gorman EJ, Woodward G, Reuman DC (2013). \emph{Cheddar}: analysis and
 visualisation of ecological communities in R. \emph{Methods in Ecology and
 Evolution}, 4(1), 99--104. \doi{10.1111/2041-210X.12005}
 

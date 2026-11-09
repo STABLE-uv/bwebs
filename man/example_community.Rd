@@ -5,6 +5,7 @@
 \alias{example_community}
 \alias{example_taxa}
 \alias{example_samples}
+\alias{example_populations}
 \title{Example community}
 \format{
 \code{example_taxa}: a data frame with 23 rows (one per node) in the format of
@@ -20,11 +21,21 @@ not sampled: use it as a permanent resource.
 \code{example_samples}: a data frame with 6 rows and columns \code{sample_id},
 \code{treatment} (\code{"control"} or \code{"exposed"}) and \code{replicate}.
 
+\code{example_populations}: a data frame with 138 rows (one per sample and
+node, detritus included) for \code{\link[=calc_fluxes]{calc_fluxes()}} and \code{\link[=node_masses]{node_masses()}}, with
+columns \code{sample_id}, \code{node_id}, \code{biomass} (g of wet mass per sample) and
+\code{mass} (mean individual wet mass of the consumers, g; \code{NA} for producers
+and detritus): the abundances of \code{example_community} times a typical
+mass of each taxon, 2 mg of periphyton per counted unit of a diatom and
+5 g of CPOM and 2 g of FPOM in every sample.
+
 An object of class \code{data.frame} with 23 rows and 14 columns.
 
 An object of class \code{data.frame} with 126 rows and 3 columns.
 
 An object of class \code{data.frame} with 6 rows and 3 columns.
+
+An object of class \code{data.frame} with 138 rows and 4 columns.
 }
 \source{
 Invented for the package; see \code{data-raw/example.R}.
@@ -35,13 +46,16 @@ example_taxa
 example_community
 
 example_samples
+
+example_populations
 }
 \description{
 Invented data for the examples: 23 freshwater nodes (four diatoms,
 detritus and 17 invertebrates, classified as in \link{gray2015}) and their
 abundances in six samples, three controls and three exposed to a stressor
 that removes mayflies, stoneflies, amphipods and the shrimp \emph{Dugastella
-valentina}. The shrimp has no records in the registry and takes those of
-\emph{Asellus} through a surrogate.
+valentina}, and the biomasses and masses of their populations for the
+energy fluxes. The shrimp has no records in the registry and takes those
+of \emph{Asellus} through a surrogate.
 }
 \keyword{datasets}

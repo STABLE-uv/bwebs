@@ -44,7 +44,8 @@ the taxonomic decay. The curve and the weights are those that maximised the
 validation by folds: the 12 validation webs of the registry with body
 masses for at least 60\% of their consumers, left out by system, with the
 probabilities and the curve fitted to the other systems, against curves
-fitted to the webs of Brose et al. (2005) and cheddar, to the freshwater
+fitted to the webs of Brose et al. (2005) and \emph{cheddar} (Hudson et al. 2013),
+to the freshwater
 webs of GATEWAy or to all of its webs, one curve or one per kind of
 predator, and weights from 0 to 1 and from 1 to 30. The mean Brier score
 of those webs went down by 0.006 (9 of 12 webs better; 0.008 with the
@@ -57,5 +58,11 @@ recorded links are mostly predation (Broadstone Stream, Skipwith Pond)
 the size term lowers many recorded links (\code{dev/validation/results.md} in
 the GitHub repository of the package). Change \code{weights} to use other
 weights.
+}
+\references{
+Hudson LN, Emerson R, Jenkins GB, Layer K, Ledger ME, Pichler DE, Thompson
+MSA, O'Gorman EJ, Woodward G, Reuman DC (2013). \emph{Cheddar}: analysis and
+visualisation of ecological communities in R. \emph{Methods in Ecology and
+Evolution}, 4(1), 99--104. \doi{10.1111/2041-210X.12005}
 }
 \keyword{datasets}

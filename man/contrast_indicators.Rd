@@ -16,7 +16,7 @@ contrast_indicators(
 )
 }
 \arguments{
-\item{x}{An object from \code{\link[=calc_indicators]{calc_indicators()}}.}
+\item{x}{An object from \code{\link[=calc_indicators]{calc_indicators()}} or \code{\link[=calc_fluxes]{calc_fluxes()}}.}
 
 \item{samples}{Data frame with one row per sample: the column
 \code{sample_id}, the column named in \code{by} and those named in \code{within}.}

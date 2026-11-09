@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use bwebs, please cite it as below."
 type: software
 title: "bwebs: Bayesian Food Webs from Compiled Trophic Interactions"
-version: 0.3.0
+version: 0.4.0
 license: MIT
 repository-code: "https://github.com/STABLE-uv/bwebs"
 authors:
@@ -22,8 +22,9 @@ abstract: >-
   decays with the taxonomic distance of their closest records, lowers the
   probability of predation between taxa of implausible body sizes, samples
   plausible food webs from those probabilities for every sample of an
-  abundance or biomass table and summarises their topological indicators
-  with credible intervals.
+  abundance or biomass table, summarises their topological indicators
+  with credible intervals and computes the energy fluxes of every
+  realization from the biomasses and body masses of the same draw.
 keywords:
   - R
   - food webs
@@ -32,3 +33,4 @@ keywords:
   - metaweb
   - Bayesian calibration
   - freshwater ecology
+  - energy fluxes

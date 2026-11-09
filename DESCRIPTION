@@ -1,6 +1,6 @@
 Package: bwebs
 Title: Bayesian Food Webs from Compiled Trophic Interactions
-Version: 0.3.0
+Version: 0.4.0
 Authors@R: c(
     person("Pablo", "Amador Crespo", email = "pamadorc@gmail.com",
            role = c("aut", "cre", "cph"),
@@ -21,8 +21,11 @@ Description: Infers the potential trophic links among the taxa of a
     taxonomic distance of their closest records, lowers the probability of
     predation between taxa of implausible body sizes,
     samples plausible food webs from the link probabilities for every sample
-    of an abundance or biomass table and summarises standard topological
-    indicators with credible intervals.
+    of an abundance or biomass table, summarises standard topological
+    indicators with credible intervals and computes the energy fluxes of
+    every realization with the food-web energetics approach of 'fluxweb'
+    (Gauzens et al. 2019 <doi:10.1111/2041-210X.13109>) from the biomasses
+    and body masses of the same draw.
     Includes the Tuesday Lake food webs (Cohen et al. 2003
     <doi:10.1073/pnas.232715699>) as an independent test.
 License: MIT + file LICENSE
@@ -41,6 +44,7 @@ Imports:
     withr
 Suggests:
     curl,
+    fluxweb,
     igraph,
     knitr,
     lme4,

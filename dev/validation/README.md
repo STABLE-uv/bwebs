@@ -1,6 +1,9 @@
 # Analysis of the method (dev/validation)
 
-Scripts that produce the results of the method of bwebs: choice of the
+<div align="justify">
+
+Scripts that produce the results of the method of *bwebs* (Amador Crespo
+and Rico 2026): choice of the
 matching rule, comparison of sources, test on Tuesday Lake and the tables
 included in the package. They are run from the root of the package, in this
 order. The times are those of a laptop with two cores (Ubuntu, R 4.3).
@@ -19,7 +22,7 @@ order. The times are those of a laptop with two cores (Ubuntu, R 4.3).
 | 9 | `data-raw/gray2015_calibration.R`, `data-raw/gray2015_globi_calibration.R <globi_registry.rds>` | default rule | `data/gray2015_calibration.rda`, `data/gray2015_globi_calibration.rda` | ~25 and ~30 min |
 | 10 | `decay_background.R <globi_registry.rds>` (taxonomic distance decay, experimental) | steps 4 and 6 | `decay_background.rds` | ~25 min |
 | 11 | `decay_package.R <globi_registry.rds> gray`, `... both_all`, `... gray_gateway` (after step 17) and `... merge` (the taxonomic decay of the package; Tuesday Lake also with the body masses of `tuesday_lake_community`) | step 3 | `decay_package.rds` | ~15 min per registry |
-| 11b | `decay_role.R <globi_registry.rds>` (needs lme4) and `decay_web_size.R <globi_registry.rds>` (variants of the decay: role of the resource, size of the web) | step 3 | `decay_role.rds`, `decay_web_size.rds` | ~10 and ~30 min |
+| 11b | `decay_role.R <globi_registry.rds>` (needs *lme4*) and `decay_web_size.R <globi_registry.rds>` (variants of the decay: role of the resource, size of the web) | step 3 | `decay_role.rds`, `decay_web_size.rds` | ~10 and ~30 min |
 | 12 | `size_brose.R <bodysizes_2008.txt> <globi_registry.rds>` (first exploration of the size term) | Brose et al. (2005), step 3 | `size_brose.rds` | minutes |
 | 13 | `size_folds.R <bodysizes_2008.txt> <cheddar data folder> <globi_registry.rds>`, then `size_lambda.R`, `size_sources.R <bodysizes_2008.txt> <cheddar data folder>` and `size_consumer_type.R <bodysizes_2008.txt> <cheddar data folder>` (validation by folds of the size term, its weights, the webs of its curve and curves by kind of predator) | Brose et al. (2005), the data files of the source of cheddar, step 3 | `size_folds.rds`, `size_sources.rds`, `size_consumer_type.rds` | ~35 min, then ~15 min each |
 | 14 | `dev/gateway/process_gateway.R <GATEWAy csv> <globi_registry.rds>` (GATEWAy version 1.0 as a registry; the csv of the iDiv Data Repository, dataset 283) | step 3 | `gateway_registry.rds` (next to the csv), `dev/gateway/gateway_taxonomy.csv`, `dev/gateway/gateway_exclusions.csv`, `dev/gateway/gateway_tuesday_lake.csv` | 2 min |
@@ -37,7 +40,8 @@ use the defaults of the package, whose classes are ordered from step 18
 Other scripts: `scoring_sensitivity.R` (scoring with a background probability
 and with maximum likelihood fits), `validation_groups.R` (webs of the same
 system in Gray), `web_coverage.R` (predictive coverage of the calibration),
-`calibration_lme4.R` (maximum likelihood fit against lme4), `example_system.R`
+`calibration_lme4.R` (maximum likelihood fit against *lme4*, Bates et al.
+2015), `example_system.R`
 (example) and `reanalysis_metaweb.R` (webs sampled with the metaweb of the
 reanalysis; needs the local copies of `dev/reference`).
 
@@ -46,6 +50,24 @@ The results and their interpretation are in `results.md`; the decisions, in
 
 The GloBI registry is not included in the package (the licences of its data
 depend on the source); the package includes only the scores. Neither are
-the body masses of Brose et al. (2005) and of cheddar. GATEWAy (CC BY 4.0)
+the body masses of Brose et al. (2005) and of *cheddar* (Hudson et al. 2013).
+GATEWAy (CC BY 4.0)
 is included as a registry (`gateway`); of its body masses, only the
 coefficients of the size term (`size_model`).
+
+## R packages cited
+
+Amador Crespo P, Rico A (2026). *bwebs*: Bayesian Food Webs from Compiled
+Trophic Interactions. R package version 0.4.0.
+<https://github.com/STABLE-uv/bwebs>
+
+Bates D, Mächler M, Bolker B, Walker S (2015). Fitting linear mixed-effects
+models using *lme4*. *Journal of Statistical Software*, 67(1), 1–48.
+<https://doi.org/10.18637/jss.v067.i01>
+
+Hudson LN, Emerson R, Jenkins GB, Layer K, Ledger ME, Pichler DE, Thompson
+MSA, O'Gorman EJ, Woodward G, Reuman DC (2013). *Cheddar*: analysis and
+visualisation of ecological communities in R. *Methods in Ecology and
+Evolution*, 4(1), 99–104. <https://doi.org/10.1111/2041-210X.12005>
+
+</div>

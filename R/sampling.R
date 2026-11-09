@@ -71,7 +71,7 @@
 #'   \eqn{d} holds the links of a web (column \eqn{d} of `z` and element
 #'   \eqn{d} of `background$present`) and the masses of its nodes (column
 #'   \eqn{d} of `masses`);
-#' * `nodes`: the nodes of the metaweb;
+#' * `nodes`: the nodes of the metaweb (identity, role and classification);
 #' * `settings`: the options used (with `masses`, the size model).
 #'
 #' With `masses`, `p_mean` of the links and of the pairs of the decay
@@ -256,7 +256,7 @@ sample_metawebs <- function(metaweb, calibration, n_draws, system = "random",
   structure(
     list(links = links, z = Z, p = res$P, system_effect = res$u, background = background,
          masses = if (use_size) 10^log_masses,
-         nodes = metaweb$nodes[c("node_id", "taxon", "role")],
+         nodes = metaweb$nodes[intersect(draw_node_columns, names(metaweb$nodes))],
          settings = list(n_draws = n_draws, system = system,
                          parameter_uncertainty = parameter_uncertainty,
                          uncalibrated = uncalibrated, seed = seed,
@@ -266,6 +266,11 @@ sample_metawebs <- function(metaweb, calibration, n_draws, system = "random",
     class = "bwebs_draws"
   )
 }
+
+# Columns of the nodes kept in the draws: identity, role and classification
+# (the classification gives the metabolic types of calc_fluxes()).
+draw_node_columns <- c("node_id", "taxon", "rank", "role", "node_type", "genus", "subfamily",
+                       "family", "order", "class", "phylum", "life_stage")
 
 # Class whose probability applies to each link of `e` (edges without
 # cannibalism; "beyond" uses "class", manual links NA) and its status:

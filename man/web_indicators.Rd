@@ -24,7 +24,7 @@ and macrophytes) that cannot go extinct in the robustness analysis.}
 
 \item{modularity}{If \code{TRUE}, compute the modularity of the best of
 \code{louvain_runs} partitions found with the Louvain algorithm on the
-undirected web (requires the igraph package).}
+undirected web (requires the package \emph{igraph}, Csardi and Nepusz 2006).}
 
 \item{robustness}{If \code{TRUE}, compute R50: the proportion of primary
 removals needed to lose at least half of the removable trophic species,
@@ -101,6 +101,10 @@ a <- matrix(0, 3, 3, dimnames = list(c("alga", "grazer", "predator"),
 a["alga", "grazer"] <- 1
 a["grazer", "predator"] <- 1
 web_indicators(a)
+}
+\references{
+Csardi G, Nepusz T (2006) The \emph{igraph} software package for complex network
+research. \emph{InterJournal, Complex Systems} 1695. \url{https://igraph.org}
 }
 \seealso{
 \code{\link[=calc_indicators]{calc_indicators()}} to compute them for every sample and draw.

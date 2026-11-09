@@ -95,8 +95,9 @@
 #' detritus and 17 invertebrates, classified as in [gray2015]) and their
 #' abundances in six samples, three controls and three exposed to a stressor
 #' that removes mayflies, stoneflies, amphipods and the shrimp *Dugastella
-#' valentina*. The shrimp has no records in the registry and takes those of
-#' *Asellus* through a surrogate.
+#' valentina*, and the biomasses and masses of their populations for the
+#' energy fluxes. The shrimp has no records in the registry and takes those
+#' of *Asellus* through a surrogate.
 #'
 #' @format
 #' `example_taxa`: a data frame with 23 rows (one per node) in the format of
@@ -111,6 +112,14 @@
 #'
 #' `example_samples`: a data frame with 6 rows and columns `sample_id`,
 #' `treatment` (`"control"` or `"exposed"`) and `replicate`.
+#'
+#' `example_populations`: a data frame with 138 rows (one per sample and
+#' node, detritus included) for [calc_fluxes()] and [node_masses()], with
+#' columns `sample_id`, `node_id`, `biomass` (g of wet mass per sample) and
+#' `mass` (mean individual wet mass of the consumers, g; `NA` for producers
+#' and detritus): the abundances of `example_community` times a typical
+#' mass of each taxon, 2 mg of periphyton per counted unit of a diatom and
+#' 5 g of CPOM and 2 g of FPOM in every sample.
 #' @source Invented for the package; see `data-raw/example.R`.
 #' @name example_community
 NULL
@@ -124,12 +133,16 @@ NULL
 #' @rdname example_community
 "example_samples"
 
+#' @rdname example_community
+"example_populations"
+
 #' Tuesday Lake food webs, 1984 and 1986
 #'
 #' The pelagic communities of Tuesday Lake (Michigan, USA) sampled in 1984 and
 #' 1986: 82 taxa (50 producers, 29 invertebrates and 3 fish), their numerical
 #' abundance and body mass, and the observed trophic links of each year (269
-#' in 1984, 241 in 1986), as compiled in the cheddar package. In bwebs they
+#' in 1984, 241 in 1986), as compiled in the *cheddar* package (Hudson et al.
+#' 2013). In *bwebs* they
 #' serve as an independent test of the construction of food webs: the
 #' registry used to build them must not contain study 12 of [gray2015], which
 #' is Tuesday Lake.
@@ -141,7 +154,7 @@ NULL
 #' `subfamily`, `family`, `order`, `class` and `phylum`, aligned with the
 #' taxonomy of [gray2015] (the rotifer class is Eurotatoria, as in the
 #' registry), plus `category` (`"producer"`, `"invertebrate"`, `"vert.ecto"`)
-#' and `name` (the node name in cheddar). Two producers, unclassified
+#' and `name` (the node name in *cheddar*). Two producers, unclassified
 #' flagellates and microflagellates, are non-taxonomic nodes.
 #'
 #' `tuesday_lake_community`: a data frame with 113 rows (one per year and
@@ -152,9 +165,9 @@ NULL
 #' `tuesday_lake_links`: a data frame with 510 rows (one per observed link)
 #' and columns `sample_id`, `resource` and `consumer` (node identifiers);
 #' it includes cannibalistic links.
-#' @source Communities TL84 and TL86 of the cheddar R package (Hudson et al.
+#' @source Communities TL84 and TL86 of the *cheddar* R package (Hudson et al.
 #'   2013; version 0.1-639, BSD 2-Clause licence, see the file `COPYRIGHTS`
-#'   of bwebs), from Cohen et al. (2003) and Jonsson et al. (2005); see
+#'   of *bwebs*), from Cohen et al. (2003) and Jonsson et al. (2005); see
 #'   `data-raw/tuesday_lake.R`.
 #' @references
 #' Cohen JE, Jonsson T, Carpenter SR (2003). Ecological community description
@@ -163,7 +176,7 @@ NULL
 #' \doi{10.1073/pnas.232715699}
 #'
 #' Hudson LN, Emerson R, Jenkins GB, Layer K, Ledger ME, Pichler DE, Thompson
-#' MSA, O'Gorman EJ, Woodward G, Reuman DC (2013). Cheddar: analysis and
+#' MSA, O'Gorman EJ, Woodward G, Reuman DC (2013). *Cheddar*: analysis and
 #' visualisation of ecological communities in R. *Methods in Ecology and
 #' Evolution*, 4(1), 99--104. \doi{10.1111/2041-210X.12005}
 #'
@@ -268,7 +281,8 @@ NULL
 #' validation by folds: the 12 validation webs of the registry with body
 #' masses for at least 60% of their consumers, left out by system, with the
 #' probabilities and the curve fitted to the other systems, against curves
-#' fitted to the webs of Brose et al. (2005) and cheddar, to the freshwater
+#' fitted to the webs of Brose et al. (2005) and *cheddar* (Hudson et al. 2013),
+#' to the freshwater
 #' webs of GATEWAy or to all of its webs, one curve or one per kind of
 #' predator, and weights from 0 to 1 and from 1 to 30. The mean Brier score
 #' of those webs went down by 0.006 (9 of 12 webs better; 0.008 with the
@@ -291,6 +305,11 @@ NULL
 #'   919--927, \doi{10.1038/s41559-019-0899-x}. GlobAL daTabasE of traits and
 #'   food Web Architecture (GATEWAy) version 1.0, iDiv Data Repository,
 #'   dataset 283 (CC BY 4.0). Fitted by `data-raw/size_model.R`.
+#' @references
+#' Hudson LN, Emerson R, Jenkins GB, Layer K, Ledger ME, Pichler DE, Thompson
+#' MSA, O'Gorman EJ, Woodward G, Reuman DC (2013). *Cheddar*: analysis and
+#' visualisation of ecological communities in R. *Methods in Ecology and
+#' Evolution*, 4(1), 99--104. \doi{10.1111/2041-210X.12005}
 "size_model"
 
 #' Registry of the freshwater trophic links of GATEWAy
