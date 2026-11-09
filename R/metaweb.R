@@ -27,13 +27,27 @@
 #'   `res_level` and `con_level` (levels at which resource and consumer were
 #'   resolved), `evidence` (types of evidence of the records), `source_ids`
 #'   (up to 20 studies), `examples` (up to 5 records), `citations` (up to 3),
-#'   `cannibal` (logical), `evidence_class` (see Details) and `extrapolated`
-#'   (logical);
+#'   `evidence_class` (see Details), the amount of evidence of the link
+#'   (`n_consumer_taxa` and `n_resource_taxa`: distinct consumer and resource
+#'   taxa among its records, that is the consumer and its relatives that eat
+#'   the resource or its relatives, and those relatives of the resource;
+#'   `n_consumer_known`: distinct consumer taxa among the records of the
+#'   consumer node whose resource is a node of the network, its relatives
+#'   with a recorded diet in the network at the level at which it was
+#'   resolved; `n_resource_known`: distinct resource taxa among the records
+#'   of the resource node whose consumer is a node of the network),
+#'   `cannibal` (logical) and `extrapolated` (logical);
 #' * `nodes`: the nodes with the levels used in each role
 #'   (`resource_level_used`, `consumer_level_used`) and whether the evidence
 #'   threshold was met;
 #' * `adjacency`: an integer matrix resource (rows) x consumer (columns)
 #'   with 1 for a link;
+#' * `decay` (with `decay = TRUE` in the rule, otherwise `NULL`): the pairs
+#'   without a link that [sample_metawebs()] draws with a probability from
+#'   the taxonomic decay, with their evidence (`consumer_level`,
+#'   `resource_level`, `generic`; see [matching_rule()]): every pair whose
+#'   consumer is a consumer node without a manual diet, except cannibalism,
+#'   the links and the pairs removed by `manual_links`;
 #' * `settings`: the rule and the registries used;
 #' * `diagnostics`: nodes left without links (`unlinked`), and whether the
 #'   levels converged.
@@ -53,9 +67,11 @@
 #' `"manual"`.
 #'
 #' @section Missing values and zeros:
-#' A pair of nodes without any matching record has no link: as in WebBuilder,
-#' absence of a record is treated as absence of the link. [calibrate_links()]
-#' explains why the probability of such pairs is not modelled.
+#' A pair of nodes without any matching record has no link in the metaweb:
+#' as in WebBuilder, absence of a record is treated as absence of the link.
+#' With `decay = TRUE` in the rule, [sample_metawebs()] still draws such
+#' pairs with a small probability that depends on how close the records of
+#' the relatives of the consumer come to the resource (`decay`).
 #'
 #' @section Assumptions:
 #' The registry records are correct and their taxonomy uses the same names as
@@ -72,7 +88,7 @@
 #' @export
 #' @examples
 #' nodes <- prepare_nodes(example_taxa)
-#' mw <- build_metaweb(nodes, gray2015)
+#' mw <- build_metaweb(nodes, combine_registries(gray2015, gateway))
 #' mw
 #' head(mw$edges[, c("resource", "consumer", "support", "evidence_class")])
 build_metaweb <- function(nodes, registry, manual_links = NULL) {
@@ -81,7 +97,7 @@ build_metaweb <- function(nodes, registry, manual_links = NULL) {
   }
   check_registry(registry)
   ml <- check_manual_links(manual_links, nodes$node_id)
-  mw <- metaweb_core(nodes, registry, ml)
+  mw <- metaweb_core(nodes, registry, ml, decay = isTRUE(attr(nodes, "rule")$decay))
   if (!mw$diagnostics$converged) {
     warning(sprintf("The matching levels did not stabilise in %d passes; see `diagnostics`.",
                     attr(nodes, "rule")$max_iter), call. = FALSE)
@@ -90,11 +106,14 @@ build_metaweb <- function(nodes, registry, manual_links = NULL) {
 }
 
 # Metaweb from validated input (used by build_metaweb() and calibrate_links()).
-metaweb_core <- function(nodes, registry, ml, prefilter = "any") {
+# With decay = TRUE, also the pairs without a link that take a probability
+# from the taxonomic decay, with their evidence (from the whole registry).
+metaweb_core <- function(nodes, registry, ml, prefilter = "any", decay = FALSE) {
   rule <- attr(nodes, "rule")
   n_records <- nrow(registry)
   regs <- sort(unique(registry$registry), method = "radix")
   n_studies <- length(unique(registry$study_id))
+  full <- registry
   registry <- registry[relevant_rows(registry, nodes, rule, sides = prefilter), , drop = FALSE]
   rx <- registry_index(registry)
   m <- compute_matching(nodes, rx, rule)
@@ -112,9 +131,10 @@ metaweb_core <- function(nodes, registry, ml, prefilter = "any") {
   nodes_out$n_res_downward <- unname(rowSums(m$Rw))
   nodes_out$n_con_direct <- unname(rowSums(m$Cd))
   nodes_out$n_con_downward <- unname(rowSums(m$Cw))
+  candidates <- if (decay) decay_candidates(nodes, full, edges, ml, rule) else NULL
   structure(
     list(
-      edges = edges, nodes = nodes_out, adjacency = adj,
+      edges = edges, nodes = nodes_out, adjacency = adj, decay = candidates,
       settings = list(rule = rule, registries = regs, n_records = n_records,
                       n_studies = n_studies),
       diagnostics = list(unlinked = unlinked_nodes(nodes_out, adj, rule$manual_diet),
@@ -198,10 +218,24 @@ build_edges <- function(nodes, reg, rx, m, rule) {
   idx <- idx[order(idx[, 2L], idx[, 1L]), , drop = FALSE]   # as which(arr.ind = TRUE)
   generic_names <- tolower(rule$generic_groups$generic)
   node_rows <- lapply(seq_len(nrow(nodes)), function(k) nodes[k, , drop = FALSE])
+  # Relatives of each node with records among the nodes: distinct consumer
+  # taxa among the records of a consumer node whose resource is matched by a
+  # node (relatives with a recorded diet in the network), and distinct
+  # resource taxa among the records of a resource node whose consumer is
+  # matched by a node. Records matched on one side only do not count, so
+  # that these numbers do not depend on the records left out before the
+  # matching (relevant_rows()).
+  res_any <- colSums(R_ | m$Rw) > 0
+  con_any <- colSums(C_ | m$Cw) > 0
+  n_distinct <- function(M, names, other) {
+    vapply(seq_len(n_nodes), function(k) length(unique(names[M[k, ] & other])), integer(1))
+  }
+  known_con <- n_distinct(C_ | m$Cw, rx$consumer_std, res_any)
+  known_res <- n_distinct(R_ | m$Rw, rx$resource_std, con_any)
   chr <- function() character(n)
   support <- registries <- evidence <- source_ids <- examples <- citations <- chr()
   evidence_class <- chr()
-  n_records <- n_sources <- integer(n)
+  n_records <- n_sources <- n_con_taxa <- n_res_taxa <- integer(n)
   for (e in seq_len(n)) {
     i <- idx[e, 1L]
     j <- idx[e, 2L]
@@ -220,6 +254,8 @@ build_edges <- function(nodes, reg, rx, m, rule) {
     registries[e] <- paste(sort(unique(reg$registry[rows]), method = "radix"), collapse = ";")
     n_records[e] <- length(rows)
     n_sources[e] <- length(unique(reg$study_id[rows]))
+    n_con_taxa[e] <- length(unique(rx$consumer_std[rows]))
+    n_res_taxa[e] <- length(unique(rx$resource_std[rows]))
     evidence[e] <- paste(sort(unique(stats::na.omit(reg$evidence[rows])), method = "radix"),
                          collapse = " | ")
     source_ids[e] <- paste(utils::head(sort(unique(stats::na.omit(reg$study_id[rows])),
@@ -234,7 +270,10 @@ build_edges <- function(nodes, reg, rx, m, rule) {
     support = support, registries = registries, n_records = n_records, n_sources = n_sources,
     res_level = m$res_level[idx[, 1L]], con_level = m$con_level[idx[, 2L]],
     evidence = evidence, source_ids = source_ids, examples = examples, citations = citations,
-    evidence_class = evidence_class, stringsAsFactors = FALSE
+    evidence_class = evidence_class,
+    n_consumer_taxa = n_con_taxa, n_resource_taxa = n_res_taxa,
+    n_consumer_known = known_con[idx[, 2L]], n_resource_known = known_res[idx[, 1L]],
+    stringsAsFactors = FALSE
   )
 }
 
@@ -243,7 +282,9 @@ empty_edges <- function() {
              registries = character(), n_records = integer(), n_sources = integer(),
              res_level = character(), con_level = character(), evidence = character(),
              source_ids = character(), examples = character(), citations = character(),
-             evidence_class = character(), stringsAsFactors = FALSE)
+             evidence_class = character(), n_consumer_taxa = integer(),
+             n_resource_taxa = integer(), n_consumer_known = integer(),
+             n_resource_known = integer(), stringsAsFactors = FALSE)
 }
 
 # Curation: remove/add manual links and drop basal nodes as consumers.
@@ -261,7 +302,8 @@ curate_edges <- function(edges, ml, basal_ids) {
       registries = rep("manual", nrow(add)), n_records = na_int, n_sources = na_int,
       res_level = na_chr, con_level = na_chr, evidence = add$notes, source_ids = add$source,
       examples = na_chr, citations = na_chr, evidence_class = rep("manual", nrow(add)),
-      stringsAsFactors = FALSE
+      n_consumer_taxa = na_int, n_resource_taxa = na_int, n_consumer_known = na_int,
+      n_resource_known = na_int, stringsAsFactors = FALSE
     ))
   }
   edges <- edges[!edges$consumer %in% basal_ids, , drop = FALSE]
@@ -270,6 +312,30 @@ curate_edges <- function(edges, ml, basal_ids) {
   edges <- edges[order(edges$consumer, edges$resource, method = "radix"), , drop = FALSE]
   rownames(edges) <- NULL
   edges
+}
+
+# Pairs without a link whose probability comes from the taxonomic decay:
+# every resource -> consumer pair whose consumer is a consumer node without a
+# manual diet, except cannibalism, the links of the metaweb and the pairs
+# removed by manual links; with the evidence of decay_evidence().
+decay_candidates <- function(nodes, registry, edges, ml, rule) {
+  empty <- data.frame(resource = character(), consumer = character(),
+                      consumer_level = character(), resource_level = character(),
+                      generic = logical(), stringsAsFactors = FALSE)
+  consumers <- nodes$node_id[nodes$role == "consumer" & !nodes$node_id %in% rule$manual_diet]
+  if (!length(consumers)) return(empty)
+  pairs <- expand.grid(resource = nodes$node_id, consumer = consumers, stringsAsFactors = FALSE)
+  pairs <- pairs[pairs$resource != pairs$consumer, , drop = FALSE]
+  key <- function(r, c) paste(r, c, sep = "\u001f")
+  removed <- ml[ml$action == "remove", , drop = FALSE]
+  taken <- c(key(edges$resource, edges$consumer), key(removed$resource, removed$consumer))
+  pairs <- pairs[!key(pairs$resource, pairs$consumer) %in% taken, , drop = FALSE]
+  if (!nrow(pairs)) return(empty)
+  prof <- decay_profiles(nodes, registry, rule, consumers = unique(pairs$consumer))
+  out <- cbind(pairs, decay_evidence(prof, pairs$resource, pairs$consumer))
+  out <- out[order(out$consumer, out$resource, method = "radix"), , drop = FALSE]
+  rownames(out) <- NULL
+  out
 }
 
 edges_to_adjacency <- function(edges, node_ids) {
@@ -314,6 +380,10 @@ print.bwebs_metaweb <- function(x, ...) {
   cls <- cls[cls > 0]
   cat("  evidence of non-cannibalistic links: ",
       paste(names(cls), cls, sep = " = ", collapse = ", "), "\n", sep = "")
+  if (!is.null(x$decay)) {
+    cat(sprintf("  pairs without a link, with a probability from the taxonomic decay: %d\n",
+                nrow(x$decay)))
+  }
   u <- x$diagnostics$unlinked
   need <- u[u$need %in% c("consumer", "resource", "manual_links"), , drop = FALSE]
   if (nrow(need)) {

@@ -59,10 +59,14 @@ Gray et al. (2015): a link resource → consumer exists if a record of the
 registry matches both nodes at their levels. The default `matching_rule()`
 starts at family level and climbs to order and class until a node links with
 at least five other nodes of the community, using every registry at every
-level (section 4 shows how this rule was chosen).
+level (section 4 shows how this rule was chosen). The package includes two
+registries that can be distributed, that of Gray et al. (2015) (`gray2015`)
+and the freshwater food webs of GATEWAy (Brose et al. 2019; `gateway`), and
+the examples combine them:
 
 ```{r}
-mw <- build_metaweb(nodes, gray2015)
+reg <- combine_registries(gray2015, gateway)
+mw <- build_metaweb(nodes, reg)
 mw
 head(mw$edges[, c("resource", "consumer", "support", "n_sources", "evidence_class")])
 ```
@@ -70,7 +74,18 @@ head(mw$edges[, c("resource", "consumer", "support", "n_sources", "evidence_clas
 Each link keeps the **class of evidence** of its best supporting record: the
 taxonomic generalisation needed to reach it (`exact` when the record names
 the node itself, then `genus`, `subfamily`, `family`, `order`, `class`, or
-`generic` for generic resources such as "Algae").
+`generic` for generic resources such as "Algae"). It also keeps how much
+evidence supports it: the records and studies (`n_records`, `n_sources`),
+the consumer and resource taxa among them (`n_consumer_taxa`: the consumer
+and its relatives that eat the resource or its relatives;
+`n_resource_taxa`: those relatives of the resource) and the relatives of
+each node with records in the network (`n_consumer_known`,
+`n_resource_known`):
+
+```{r}
+head(mw$edges[, c("resource", "consumer", "evidence_class", "n_sources",
+                  "n_consumer_taxa", "n_consumer_known")])
+```
 
 ## 3. Calibration: how often are inferred links observed?
 
@@ -101,35 +116,82 @@ standard deviation of the web effect a half-normal prior (scale
 `prior_sigma = 2.5`); the web effects are integrated out by adaptive
 Gauss-Hermite quadrature and the posterior is sampled by Metropolis-Hastings
 (`diagnostics$rhat` should be close to 1 and `diagnostics$ess` large). The
-package includes the calibration of the Gray et al. (2015) registry with the
-default rule:
+package includes the calibrations of the Gray et al. (2015) registry alone
+(`gray2015_calibration`), combined with GloBI (`gray2015_globi_calibration`)
+and combined with GATEWAy, the one of the examples:
 
 ```{r}
-gray2015_calibration
-gray2015_calibration$webs[, c("study_id", "n_consumers", "n_predicted", "precision")]
+gray2015_gateway_calibration
+gray2015_gateway_calibration$webs[, c("study_id", "n_consumers", "n_predicted", "precision")]
 ```
 
 `p_average` is the probability in a web with an average effect and `p_new`
 the probability in a new system, averaged over web effects. Two results
 matter for the interpretation:
 
-* Links supported by records of the same genus are observed more often than
-  links that needed a family or an order: the class of evidence is
-  informative. The probability does not fall steadily with the
-  generalisation, though: links of the same taxon are observed less often
-  than links of the same genus, and links that needed a class about as
-  often.
+* Links supported by records of the taxon itself or of its genus are
+  observed more often than links that needed a family, and these more often
+  than links that needed an order or a class: the class of evidence is
+  informative. The classes are ordered (`monotone = TRUE`, the default), so
+  that a link supported by a closer relative is never less probable than
+  one supported by a more distant relative; neighbouring classes that the
+  validation webs do not separate share their probability. With a free
+  coefficient per class (`calibrate_links(monotone = FALSE)`) links of the
+  same genus came out more probable than links of the same taxon, and links
+  that needed a class more probable than links that needed an order; in the
+  cross-validation of section 4 both versions predicted the webs left out
+  equally well.
+* The probability depends on the class only, not on the amount of evidence:
+  in the same cross-validation, links supported by more studies, records or
+  relatives (or by a larger share of the relatives of the consumer or of
+  the resource) were not more often observed in the webs left out than the
+  class predicts. Their effects changed sign from one registry to another,
+  since they reflect how much each group has been studied rather than how
+  probable the link is.
 * The proportion of inferred links that are observed varies a lot between
   webs (the standard deviation of the web effect on the logit scale is
-  `r round(gray2015_calibration$sigma, 2)`): part of it reflects differences
+  `r round(gray2015_gateway_calibration$sigma, 2)`): part of it reflects differences
   between systems, part how completely each web was described.
 
 The probability of a link is the probability of observing it in a comparable,
 well-studied community. Because validation webs miss rare links, it is a
-lower bound for the existence of the link. Pairs without an inferred link are
-not modelled: in a registry web a taxon is listed because it eats or is
-eaten, so the rate of links among pairs that were not inferred in those webs
-does not transfer to communities sampled independently of their diets.
+lower bound for the existence of the link.
+
+### Pairs without an inferred link: the taxonomic decay
+
+The rule infers a link only where the registry has records close enough to
+both nodes. The other pairs are not impossible: in the validation webs,
+`r round(100 * sum(gray2015_gateway_calibration$decay$counts$observed) / sum(gray2015_gateway_calibration$decay$counts$pairs))`%
+of the pairs without an inferred link are recorded links. With
+`matching_rule(decay = TRUE)` (the default), `validate_rule()` also records
+how close the registry comes to each of those pairs: the closest level at
+which relatives of the consumer have recorded diets (its family, order,
+class, phylum or any consumer) and the closest level at which the resource
+is related to a resource of those diets (within the family of a recorded
+resource, order, class, phylum or not related), and whether a record of a
+generic group applies to it. `calibrate_links()` fits a second model of the
+same form to these counts, with its own web effect, with effects that never
+increase with the distance and with an effect of the size of the web (per
+unit of log(nodes / 50)), since connectance usually falls as webs grow:
+
+```{r}
+gray2015_gateway_calibration$decay$effects[, c("side", "level", "estimate", "std_error")]
+```
+
+The consumer effects are on the logit scale for a resource not related to
+the recorded diet, in a web of 50 nodes; the resource effects are added to
+them. `sample_metawebs()` uses the number of nodes of the metaweb, and
+`score_metaweb()` the number of nodes evaluated. With Gray + GATEWAy a
+resource within the family of a recorded resource raises the probability,
+and consumers whose closest relatives with records are in another phylum
+get much less; with the Gray registry alone the decay mostly gives these
+pairs the rate at which the rule misses links, and the relation of the
+resource to the recorded diet barely changes it. With GloBI the rule misses
+fewer links and the decay is lower (section 9). In the validation webs every taxon eats or is
+eaten, so these probabilities may be too high for communities sampled
+independently of their diets; Tuesday Lake (section 5) is a check.
+`matching_rule(decay = FALSE)` gives these pairs probability 0, as in
+WebBuilder.
 
 Which studies count as whole communities is a scientific decision. The
 bundled calibration uses a provisional set (`gray2015_sources$validation`);
@@ -154,7 +216,11 @@ better). A missed link costs 1, an inferred link of probability \(p\) costs
 rewards both finding the links and giving them the right probabilities. The
 `skill` compares it with a null model that gives every pair the mean
 connectance of the other systems, and `tss` is the true skill statistic of
-the deterministic metaweb, as in Gray et al. (2015).
+the deterministic metaweb, as in Gray et al. (2015). With the taxonomic
+decay, the pairs without an inferred link take instead the probability of
+their evidence under the decay model fitted to the other systems. The rules
+and the sources below were compared without the decay (it was added
+afterwards, in version 0.3.0).
 
 `compare_rules()` scores a list of rules on the same webs; `candidate_rules()`
 is the grid of 21 rules (fixed matching at the taxon, genus, family or
@@ -207,6 +273,14 @@ shared links do not detect; without them the scores were nearly the same
 package). The rule itself was again best climbing from family, with any
 source.
 
+The freshwater food webs of GATEWAy (Brose et al. 2019; `gateway`, with the
+webs that copy a validation web left out with it) were compared later,
+with the default rule and the decay: they lowered the Brier score of the
+Gray registry from 0.209 to 0.205, but raised that of Gray + GloBI from
+0.197 to 0.201. Gray + GloBI is therefore the best combination, and Gray +
+GATEWAy the best one that the package can include
+(`gray2015_gateway_calibration`; GloBI records cannot be redistributed).
+
 ## 5. An independent test: Tuesday Lake
 
 The Tuesday Lake food webs of 1984 and 1986 (Cohen et al. 2003; Jonsson et
@@ -243,13 +317,32 @@ source_comparison[1:12, c("source", "rule", "tl_brier", "tl_skill", "tl_tss", "t
 The default inferred about 70% of the observed links (a fifth with the Gray
 registry alone, mostly British streams with few diets of plankton) and had
 a positive skill; the ranking of the combinations on Tuesday Lake agreed
-with the cross-validation (Spearman correlation 0.73). Two weaknesses
-remain. Links inferred from generic resources ("Algae" extended to every
-alga) are frequent in the validation streams but rare in this plankton web,
-so their calibrated probability is too high there. And the webs sampled
-from the metaweb have too many basal species and too low a mean trophic
-level: sampling can only remove links of the metaweb, not add those it
-misses.
+with the cross-validation (Spearman correlation 0.73). Links inferred from
+generic resources ("Algae" extended to every alga) are frequent in the
+validation streams but rare in this plankton web, so their calibrated
+probability is too high there.
+
+The scores above are those of the rule alone. With the taxonomic decay
+(section 3), the pairs without an inferred link take the probability of
+their evidence, and on Tuesday Lake every score improved: with Gray + GloBI
+the Brier score went from 0.147 to 0.141 (1984) and from 0.160 to 0.154
+(1986), and the decay expected a few links fewer among the pairs not
+inferred than the rule had missed (68 and 55, against 78 and 69 observed).
+Among taxa, the webs sampled with the decay came close to the observed ones
+in connectance, mean trophic level and proportion of top taxa, which the
+rule alone underestimated. The decay does not know body size, though: it
+also gives some probability to pairs that size would exclude, and most
+consumers of the sampled webs were omnivores (0.84 of the trophic species
+in 1984, against 0.50 observed). With the body masses of each year (section
+6), the Brier score went down to 0.138 and 0.151 and the omnivores to 0.69,
+while the top taxa rose to 0.07 (0.02 observed). With Gray + GATEWAy, the
+registries of the examples, the scores with the masses were 0.139 and 0.137,
+the best of the three combinations in 1986. These scores are those of free
+coefficients of the classes of evidence; with the ordered classes of the
+default (section 3), the scores with the masses went down to 0.132 and
+0.139 with Gray + GloBI and to 0.136 and 0.133 with Gray + GATEWAy, and up
+to 0.146 and 0.147 with the Gray registry alone (`dev/validation/results.md`
+in the GitHub repository of the package).
 
 ## 6. Plausible metawebs
 
@@ -260,7 +353,7 @@ with the probability of its class. One realisation of the metaweb is shared
 by all the samples of the community in each draw.
 
 ```{r}
-draws <- sample_metawebs(mw, gray2015_calibration, n_draws = 100, seed = 2026)
+draws <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 100, seed = 2026)
 draws
 head(draws$links[, c("resource", "consumer", "evidence_class", "p_mean", "inclusion")])
 ```
@@ -268,6 +361,96 @@ head(draws$links[, c("resource", "consumer", "evidence_class", "p_mean", "inclus
 With `system = "average"` the system effect is fixed at 0 (a community like
 the average validation web) and the intervals are narrower; a number fixes it
 at that value on the logit scale.
+
+With the taxonomic decay, every pair without a link of the metaweb
+(`mw$decay`) is drawn too, with the probability of its evidence and an
+effect of the system of its own, drawn independently of that of the classes.
+These links are kept apart, as the rows of `draws$background$pairs` present
+in each draw, and `calc_indicators()` adds them to the web of every sample:
+
+```{r}
+head(draws$background$pairs[, c("resource", "consumer", "consumer_level", "resource_level",
+                                 "p_mean")])
+```
+
+### The matrix of link probabilities
+
+`link_probabilities()` gives the probability of every resource → consumer
+pair, the matrix from which the draws come: each inferred link with the
+probability of its class in a new system (`p_new`), each pair without a link
+with that of its evidence for the decay, manual links 1 and cannibalism 0.
+A pair of probability 0.25 is present in about one draw in four:
+
+```{r}
+P <- link_probabilities(mw, gray2015_gateway_calibration)
+round(P[c("cocconeis_placentula", "cpom", "baetis_rhodani", "simulium"),
+        c("gammarus_pulex", "cordulegaster_boltonii")], 2)
+inc <- draws$links$inclusion
+p_links <- P[cbind(draws$links$resource, draws$links$consumer)]
+summary(inc - p_links)
+```
+
+In a draw the links share the parameters and the effect of the system, so
+the number of links varies more among draws than among webs drawn link by
+link from `P`; the probability of each pair is the same. With
+`system = "average"` or a number, `link_probabilities()` fixes the effect
+of the system as `sample_metawebs()` does, and with `masses` it includes
+the size term.
+
+### Body masses
+
+The links of a predator also depend on the size of its prey, which the
+registry does not know. With `masses`, `sample_metawebs()` shifts the
+probability of every predation pair (an animal resource) by the effect of
+the predator/prey mass ratio of `size_model`: 0 at the optimum ratio and
+lower the further the ratio is from it, fitted to the aquatic webs of
+GATEWAy, with weights for the links inferred by the rule and for the pairs
+of the taxonomic decay chosen by the validation by folds (the 12 validation
+webs with body masses, left out by system):
+
+```{r}
+size_model
+```
+
+The masses can be one per node, as here for Tuesday Lake (the unit does not
+matter, only the ratios), or a matrix with one row per node and one column
+per draw. With the masses of the draws of a biomass model (such as
+`bmassa::simulate()`), each realization of the web uses the masses of its
+own draw, so that the links of a realization and the masses and biomasses of
+its taxa come from the same draw:
+
+```{r}
+masses <- tapply(tuesday_lake_community$mass_kg, tuesday_lake_community$node_id, mean)
+reg_tl <- combine_registries(gray2015[gray2015$study_id != "12", ], gateway)
+mw_tl <- build_metaweb(prepare_nodes(tuesday_lake_taxa), reg_tl)
+draws_tl <- sample_metawebs(mw_tl, gray2015_gateway_calibration, n_draws = 200,
+                            masses = masses, seed = 1)
+draws_tl
+```
+
+Draws with and without `masses` use the same random numbers, so a draw
+loses only the links that the size term makes improbable.
+
+With a matrix of masses, draw `d` of the result is one realization of the
+web: its links (column `d` of `z` and element `d` of `background$present`)
+and the masses of its nodes (column `d` of `masses`). Here the masses of
+each draw are invented, with a log-normal error of 20%; in an analysis they
+would come from the draws of a biomass model, so that the biomasses of the
+same draw go with that web:
+
+```{r}
+set.seed(1)
+m_draws <- matrix(masses, length(masses), 200, dimnames = list(names(masses), NULL)) *
+  exp(matrix(stats::rnorm(length(masses) * 200, 0, 0.2), length(masses)))
+draws_m <- sample_metawebs(mw_tl, gray2015_gateway_calibration, n_draws = 200,
+                           masses = m_draws, seed = 1)
+d <- 1
+web_1 <- rbind(draws_m$links[draws_m$z[, d], c("resource", "consumer")],
+               draws_m$background$pairs[draws_m$background$present[[d]],
+                                        c("resource", "consumer")])
+nrow(web_1)
+head(draws_m$masses[, d])
+```
 
 ## 7. Indicators of every sample
 
@@ -333,7 +516,8 @@ draws2 <- sample_metawebs(mw2, gray2015_globi_calibration, n_draws = 100, seed =
 
 `gray2015_globi_calibration` is the calibration of the default rule with the
 Gray registry combined with GloBI (13 validation webs, with the GloBI copies
-of each web left out when it was rebuilt):
+of each web left out when it was rebuilt), the best combination of the
+cross-validation (section 4):
 
 ```{r}
 gray2015_globi_calibration
@@ -350,6 +534,11 @@ GloBI records of the consumers of the validation webs
 package).
 
 ## References
+
+Brose U, et al. (2019). Predator traits determine
+food-web architecture across ecosystems. *Nature Ecology & Evolution*, 3,
+919–927. <https://doi.org/10.1038/s41559-019-0899-x> (GATEWAy version 1.0,
+iDiv Data Repository, dataset 283, CC BY 4.0)
 
 Cohen JE, Jonsson T, Carpenter SR (2003). Ecological community description
 using the food web, species abundance, and body size. *Proceedings of the

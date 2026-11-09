@@ -58,6 +58,17 @@ predicted links observed, precision, recall, whether the matching
 levels converged, the studies of its group left out to rebuild it
 (\code{left_out}) and the number of other studies left out (\code{n_excluded}, see
 \code{exclusions});
+\item \code{links}: one row per link inferred in each validation web (\code{study_id},
+\code{resource}, \code{consumer}, \code{evidence_class}, the amount of evidence of the
+link as in the \code{edges} of \code{\link[=build_metaweb]{build_metaweb()}}: \code{n_records}, \code{n_sources},
+\code{n_consumer_taxa}, \code{n_resource_taxa}, \code{n_consumer_known},
+\code{n_resource_known}; and whether the web recorded it, \code{observed});
+\item \code{decay} (with \code{decay = TRUE} in the rule, otherwise \code{NULL}): the pairs
+without an inferred link of each web by their evidence for the
+taxonomic decay (\code{study_id}, \code{consumer_level}, \code{resource_level},
+\code{generic}; see \code{\link[=matching_rule]{matching_rule()}}), with the number of \code{pairs}, how
+many of them were \code{observed} (recorded links that the rule missed) and
+the number of nodes of the web (\code{web_nodes});
 \item \code{settings}: rule, sources, groups, registries and number of records.
 }
 }
@@ -82,7 +93,9 @@ starting with its genus is a species, and a name without any rank is a
 non-taxonomic node. Taxa that are only eaten in the web are producers when
 the registry says so, detritus when they have no classification and
 consumers otherwise; their diets are not evaluated. Nodes with a manual
-diet in \code{rule} are matched like any other node.
+diet in \code{rule} are matched like any other node. With \code{decay = TRUE} in the
+rule, the evidence of the pairs without an inferred link comes from the
+same records (the registry without the studies left out).
 }
 \section{Assumptions}{
 

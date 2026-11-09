@@ -40,8 +40,8 @@
 #' @export
 #' @examples
 #' nodes <- prepare_nodes(example_taxa)
-#' mw <- build_metaweb(nodes, gray2015)
-#' draws <- sample_metawebs(mw, gray2015_calibration, n_draws = 10, seed = 1)
+#' mw <- build_metaweb(nodes, combine_registries(gray2015, gateway))
+#' draws <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 10, seed = 1)
 #' ind <- calc_indicators(draws, example_community, permanent = c("cpom", "fpom"))
 #' summarize_indicators(ind, indicators = c("C", "TL_mean"))
 #' summarize_indicators(ind, indicators = "C", samples = example_samples, by = "treatment")
@@ -177,8 +177,8 @@ summarize_indicators <- function(x, indicators = NULL, samples = NULL, by = NULL
 #' @export
 #' @examples
 #' nodes <- prepare_nodes(example_taxa)
-#' mw <- build_metaweb(nodes, gray2015)
-#' draws <- sample_metawebs(mw, gray2015_calibration, n_draws = 10, seed = 1)
+#' mw <- build_metaweb(nodes, combine_registries(gray2015, gateway))
+#' draws <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 10, seed = 1)
 #' ind <- calc_indicators(draws, example_community, permanent = c("cpom", "fpom"))
 #' contrast_indicators(ind, samples = example_samples, by = "treatment",
 #'                     reference = "control", indicators = c("C", "TL_mean"))

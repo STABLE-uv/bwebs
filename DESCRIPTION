@@ -1,6 +1,6 @@
 Package: bwebs
 Title: Bayesian Food Webs from Compiled Trophic Interactions
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: c(
     person("Pablo", "Amador Crespo", email = "pamadorc@gmail.com",
            role = c("aut", "cre", "cph"),
@@ -14,11 +14,15 @@ Description: Infers the potential trophic links among the taxa of a
     registry of freshwater interactions, estimates with a Bayesian
     hierarchical model how often links inferred with each class of taxonomic
     evidence are observed in independent food webs, compares matching rules
-    and sources of interactions (that registry and Global Biotic
-    Interactions) by cross-validated Brier scores, samples plausible food
-    webs from the link probabilities for every sample of an abundance or
-    biomass table and summarises standard topological indicators with
-    credible intervals.
+    and sources of interactions (that registry, Global Biotic Interactions
+    and the freshwater food webs of GATEWAy, Brose et al. 2019
+    <doi:10.1038/s41559-019-0899-x>) by cross-validated Brier scores, gives
+    the pairs without an inferred link a probability that decays with the
+    taxonomic distance of their closest records, lowers the probability of
+    predation between taxa of implausible body sizes,
+    samples plausible food webs from the link probabilities for every sample
+    of an abundance or biomass table and summarises standard topological
+    indicators with credible intervals.
     Includes the Tuesday Lake food webs (Cohen et al. 2003
     <doi:10.1073/pnas.232715699>) as an independent test.
 License: MIT + file LICENSE

@@ -4,9 +4,10 @@
 #'
 #' `calc_indicators()` builds the local food web of every sample of a
 #' community table (the nodes present in the sample plus the permanent
-#' resources) from each draw of [sample_metawebs()], or from the
-#' deterministic metaweb of [build_metaweb()], and computes its indicators
-#' with [web_indicators()].
+#' resources) from each draw of [sample_metawebs()] (its inferred links and,
+#' with the taxonomic decay, the pairs without a link drawn in that draw), or
+#' from the deterministic metaweb of [build_metaweb()] (inferred links only),
+#' and computes its indicators with [web_indicators()].
 #'
 #' @param x A `bwebs_draws` object from [sample_metawebs()] or a
 #'   `bwebs_metaweb` object from [build_metaweb()] (one deterministic web per
@@ -53,8 +54,8 @@
 #' @export
 #' @examples
 #' nodes <- prepare_nodes(example_taxa)
-#' mw <- build_metaweb(nodes, gray2015)
-#' draws <- sample_metawebs(mw, gray2015_calibration, n_draws = 5, seed = 1)
+#' mw <- build_metaweb(nodes, combine_registries(gray2015, gateway))
+#' draws <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 5, seed = 1)
 #' ind <- calc_indicators(draws, example_community, permanent = c("cpom", "fpom"))
 #' head(ind$values[, c("draw", "sample_id", "S", "L", "C", "TL_mean")])
 calc_indicators <- function(x, community, sample_col = "sample_id", node_col = "node_id",
@@ -113,11 +114,16 @@ calc_indicators <- function(x, community, sample_col = "sample_id", node_col = "
   })
   if (inherits(x, "bwebs_draws")) {
     links <- x$links
+    bg <- x$background
     draws <- seq_len(ncol(x$z))
     adj_of <- function(d) {
       a <- matrix(0L, length(node_ids), length(node_ids), dimnames = list(node_ids, node_ids))
       on <- x$z[, d]
       if (any(on)) a[cbind(links$resource[on], links$consumer[on])] <- 1L
+      if (!is.null(bg) && length(bg$present[[d]])) {
+        b <- bg$present[[d]]
+        a[cbind(bg$pairs$resource[b], bg$pairs$consumer[b])] <- 1L
+      }
       a
     }
   } else {

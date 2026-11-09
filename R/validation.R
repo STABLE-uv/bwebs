@@ -47,6 +47,17 @@
 #'   levels converged, the studies of its group left out to rebuild it
 #'   (`left_out`) and the number of other studies left out (`n_excluded`, see
 #'   `exclusions`);
+#' * `links`: one row per link inferred in each validation web (`study_id`,
+#'   `resource`, `consumer`, `evidence_class`, the amount of evidence of the
+#'   link as in the `edges` of [build_metaweb()]: `n_records`, `n_sources`,
+#'   `n_consumer_taxa`, `n_resource_taxa`, `n_consumer_known`,
+#'   `n_resource_known`; and whether the web recorded it, `observed`);
+#' * `decay` (with `decay = TRUE` in the rule, otherwise `NULL`): the pairs
+#'   without an inferred link of each web by their evidence for the
+#'   taxonomic decay (`study_id`, `consumer_level`, `resource_level`,
+#'   `generic`; see [matching_rule()]), with the number of `pairs`, how
+#'   many of them were `observed` (recorded links that the rule missed) and
+#'   the number of nodes of the web (`web_nodes`);
 #' * `settings`: rule, sources, groups, registries and number of records.
 #'
 #' @details
@@ -59,7 +70,9 @@
 #' non-taxonomic node. Taxa that are only eaten in the web are producers when
 #' the registry says so, detritus when they have no classification and
 #' consumers otherwise; their diets are not evaluated. Nodes with a manual
-#' diet in `rule` are matched like any other node.
+#' diet in `rule` are matched like any other node. With `decay = TRUE` in the
+#' rule, the evidence of the pairs without an inferred link comes from the
+#' same records (the registry without the studies left out).
 #'
 #' @section Assumptions:
 #' No study left in the registry describes the same system as the web left
@@ -110,6 +123,8 @@ validate_rule <- function(registry, sources, groups = NULL, rule = matching_rule
   rule_cv$manual_diet <- character(0)
   webs <- vector("list", length(sources))
   counts <- vector("list", length(sources))
+  links <- vector("list", length(sources))
+  decay <- vector("list", length(sources))
   for (k in seq_along(sources)) {
     w <- sources[k]
     if (!quiet) message(sprintf("Validation web %s (%d/%d)", w, k, length(sources)))
@@ -118,13 +133,23 @@ validate_rule <- function(registry, sources, groups = NULL, rule = matching_rule
                         train_registries = train_registries, extra = extra)
     webs[[k]] <- res$web
     counts[[k]] <- res$counts
+    links[[k]] <- res$links
+    decay[[k]] <- res$decay
   }
   webs <- do.call(rbind, webs)
   counts <- do.call(rbind, counts)
+  links <- do.call(rbind, links)
   rownames(webs) <- NULL
   rownames(counts) <- NULL
+  rownames(links) <- NULL
+  if (isTRUE(rule$decay)) {
+    decay <- do.call(rbind, decay)
+    rownames(decay) <- NULL
+  } else {
+    decay <- NULL
+  }
   structure(
-    list(counts = counts, webs = webs,
+    list(counts = counts, webs = webs, links = links, decay = decay,
          settings = list(rule = rule, sources = sources, groups = groups,
                          exclusions = exclusions,
                          registries = sort(train_registries, method = "radix"),
@@ -144,6 +169,10 @@ print.bwebs_validation <- function(x, ...) {
               paste(x$settings$registries, collapse = ", ")))
   cat(sprintf("  recall (recorded links inferred) per web from %.2f to %.2f\n",
               min(w$recall, na.rm = TRUE), max(w$recall, na.rm = TRUE)))
+  if (!is.null(x$decay)) {
+    cat(sprintf("  pairs not inferred: %d, with %d recorded links (evidence of the taxonomic decay)\n",
+                as.integer(sum(x$decay$pairs)), as.integer(sum(x$decay$observed))))
+  }
   if (length(x$settings$groups)) {
     cat("  studies left out together: ",
         paste(vapply(x$settings$groups, paste, character(1), collapse = " + "), collapse = "; "),
@@ -264,6 +293,10 @@ validate_web <- function(registry, study, rule, exclude = study, train_registrie
     n_excluded = length(setdiff(unique(extra), exclude)),
     stringsAsFactors = FALSE
   )
+  links <- data.frame(study_id = rep(study, nrow(e)), e[c("resource", "consumer", "evidence_class",
+                                                          link_evidence_columns, "observed")],
+                      stringsAsFactors = FALSE)
+  rownames(links) <- NULL
   if (nrow(e) == 0L) {
     counts <- data.frame(study_id = character(), evidence_class = character(),
                          predicted = integer(), observed = integer(), stringsAsFactors = FALSE)
@@ -275,5 +308,22 @@ validate_web <- function(registry, study, rule, exclude = study, train_registrie
     counts <- data.frame(study_id = rep(study, sum(keep)), evidence_class = evidence_classes[keep],
                          predicted = pred[keep], observed = obs[keep], stringsAsFactors = FALSE)
   }
-  list(web = web, counts = counts)
+  # evidence of the taxonomic decay for the pairs without an inferred link
+  decay <- NULL
+  if (isTRUE(rule$decay)) {
+    pairs <- expand.grid(resource = nodes$node_id, consumer = studied_ids, stringsAsFactors = FALSE)
+    pairs <- pairs[pairs$resource != pairs$consumer, , drop = FALSE]
+    pairs <- pairs[!key(pairs$resource, pairs$consumer) %in% key(e$resource, e$consumer), ,
+                   drop = FALSE]
+    prof <- decay_profiles(nodes, train, rule, consumers = studied_ids)
+    ev <- decay_evidence(prof, pairs$resource, pairs$consumer)
+    decay <- decay_count_table(study, ev, key(pairs$resource, pairs$consumer) %in% truth)
+    decay$web_nodes <- rep(nrow(nodes), nrow(decay))
+  }
+  list(web = web, counts = counts, links = links, decay = decay)
 }
+
+# Columns of the edges with the amount of evidence of each link (see
+# build_metaweb()).
+link_evidence_columns <- c("n_records", "n_sources", "n_consumer_taxa", "n_resource_taxa",
+                           "n_consumer_known", "n_resource_known")

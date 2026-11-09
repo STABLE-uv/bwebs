@@ -21,7 +21,7 @@ cals <- mws <- list()
 scores <- list()
 for (nm in cmp$table$rule) {
   v <- cmp$validations[[nm]]
-  cals[[nm]] <- calibrate_links(v, seed = 2026, quiet = TRUE)
+  cals[[nm]] <- calibrate_links(v, monotone = FALSE, seed = 2026, quiet = TRUE)
   mws[[nm]] <- build_metaweb(prepare_nodes(tuesday_lake_taxa, rule = v$settings$rule), reg)
   for (y in years) {
     obs <- tuesday_lake_links[tuesday_lake_links$sample_id == y, ]

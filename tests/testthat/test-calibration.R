@@ -62,6 +62,11 @@ test_that("validate_web() compares inferred and recorded links of a held-out web
   expect_identical(res$web$n_predicted_observed, 2L)
   expect_identical(res$counts$evidence_class, "genus")
   expect_identical(res$counts$observed, 2L)
+  # one row per inferred link, with its amount of evidence
+  expect_identical(nrow(res$links), 3L)
+  expect_identical(sum(res$links$observed), 2L)
+  expect_identical(res$links$study_id, rep("A", 3L))
+  expect_true(all(res$links$n_sources == 1L & res$links$n_consumer_taxa == 1L))
   res_b <- validate_web(reg, "B", tiny_rule())
   expect_identical(res_b$web$precision, 1)
   expect_identical(res$web$left_out, "A")
@@ -146,6 +151,11 @@ test_that("the bundled calibration has the documented structure", {
   expect_identical(cal$settings$groups, list(c("13", "50")))
   expect_identical(cal$webs$left_out[cal$webs$study_id %in% c("13", "50", "46")],
                    c("13, 50", "46", "50, 13"))
+  # ordered classes: a closer relative is never less probable
+  expect_true(cal$settings$monotone)
+  co <- cal$coefficients
+  ordered <- co$estimate[match(intersect(ordered_classes, co$evidence_class), co$evidence_class)]
+  expect_true(all(diff(ordered) <= 1e-12))
   expect_snapshot(print(cal))
 })
 
@@ -163,6 +173,26 @@ test_that("the bundled calibration with GloBI has the documented structure", {
   expect_true(all(ex$web %in% cal$webs$study_id))
   expect_identical(cal$webs$n_excluded[cal$webs$study_id == "12"] > 0L, TRUE)
   expect_identical(sum(cal$counts$predicted), sum(cal$webs$n_predicted))
+})
+
+test_that("the bundled registry and calibration of GATEWAy have the documented structure", {
+  expect_identical(names(gateway), names(gray2015))
+  expect_identical(unique(gateway$registry), "gateway")
+  expect_true(all(startsWith(gateway$study_id, "gateway: ")))
+  expect_false(any(grepl("Tuesday Lake", gateway$study_id)))
+  expect_gt(mean(!is.na(gateway$con_class)), 0.95)
+  cal <- gray2015_gateway_calibration
+  expect_s3_class(cal, "bwebs_calibration")
+  expect_identical(cal$settings$registries, c("gateway", "gray2015"))
+  expect_true(same_rule(cal$settings$rule, matching_rule()))
+  expect_identical(nrow(cal$webs), 13L)
+  expect_true(cal$diagnostics$converged)
+  expect_true(cal$decay$diagnostics$converged)
+  expect_true("web" %in% cal$decay$effects$side)
+  expect_true(cal$settings$monotone)
+  ex <- cal$settings$exclusions
+  expect_true(all(ex$study_id %in% gateway$study_id))
+  expect_true(all(ex$web %in% cal$webs$study_id))
 })
 
 test_that("the bundled comparison of sources has the documented structure", {
@@ -234,4 +264,52 @@ test_that("the probability in a new system integrates over the web effect", {
   f <- function(u) stats::plogis(0.4 + u) * stats::dnorm(u, 0, 1.3)
   expect_equal(p_new_system(0.4, 1.3), stats::integrate(f, -Inf, Inf)$value, tolerance = 1e-8)
   expect_equal(p_new_system(c(0, 0), c(0.5, 2)), c(0.5, 0.5))
+})
+
+test_that("isotonic regression pools adjacent violators", {
+  expect_equal(isotonic_decreasing(c(3, 1, 2, 0)), c(3, 1.5, 1.5, 0))
+  expect_equal(isotonic_decreasing(c(1, 2, 0, 0.5, -1), c(1, 1, 1, 3, 1)),
+               c(1.5, 1.5, 0.375, 0.375, -1))
+  expect_identical(isotonic_decreasing(c(2, 1, 0)), c(2, 1, 0))
+  expect_identical(isotonic_decreasing(5), 5)
+})
+
+test_that("the monotone parametrisation orders the classes and keeps generic free", {
+  mm <- monotone_map(c("exact", "genus", "family", "order", "generic"))
+  expect_identical(mm$names, c("exact", "step_genus", "step_family", "step_order", "generic",
+                               "log_sigma"))
+  th <- c(1, 0.5, 0, 1, -2, 0.1)
+  a <- mm$alpha(th)
+  expect_equal(unname(a), c(1, 0.5, 0.5, -0.5, -2, 0.1))
+  expect_equal(mm$J %*% th, matrix(unname(a)))
+  expect_identical(mm$steps, 2:4)
+})
+
+test_that("ordered classes are never less probable when closer", {
+  # simulated webs whose genus links are more often recorded than exact ones
+  withr::local_seed(3)
+  alpha <- c(exact = 0, genus = 0.6, family = -0.5, order = -0.3, generic = 1)
+  webs <- paste0("w", 1:8)
+  u <- stats::rnorm(8, 0, 0.7)
+  counts <- do.call(rbind, lapply(seq_along(webs), function(w) {
+    m <- c(60, 80, 120, 100, 30)
+    data.frame(study_id = webs[w], evidence_class = names(alpha), predicted = m,
+               observed = stats::rbinom(5, m, stats::plogis(alpha + u[w])),
+               stringsAsFactors = FALSE)
+  }))
+  free <- fit_calibration(counts, 20)
+  ord <- fit_calibration(counts, 20, monotone = TRUE)
+  ordered <- ord$coefficients$estimate[match(c("exact", "genus", "family", "order"),
+                                             ord$coefficients$evidence_class)]
+  expect_true(all(diff(ordered) <= 1e-8))
+  expect_lte(ord$loglik, free$loglik + 1e-6)
+  expect_true(ord$information_pd)
+  # the generic class is not constrained
+  expect_equal(ord$coefficients$estimate[5], free$coefficients$estimate[5], tolerance = 0.05)
+  b <- fit_calibration_bayes(counts, 1.5, 2.5, n_chains = 2L, n_iter = 500L, n_warmup = 300L,
+                             quadrature = 20L, seed = 1, monotone = TRUE, thin = 2L)
+  d <- b$draws[, c("exact", "genus", "family", "order")]
+  expect_true(all(apply(d, 1, function(x) all(diff(x) <= 1e-12))))
+  expect_equal(unname(b$theta[1:5]), unname(ord$theta[1:5]), tolerance = 0.15)
+  expect_identical(colnames(b$draws), c(names(alpha), "log_sigma"))
 })

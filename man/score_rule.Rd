@@ -7,6 +7,7 @@
 score_rule(
   validation,
   method = "bayes",
+  monotone = TRUE,
   prior_sd = 1.5,
   prior_sigma = 2.5,
   n_chains = 2L,
@@ -20,9 +21,11 @@ score_rule(
 \arguments{
 \item{validation}{A \code{\link[=validate_rule]{validate_rule()}} result.}
 
-\item{method, prior_sd, prior_sigma, n_chains, n_iter, n_warmup, quadrature}{Passed to \code{\link[=calibrate_links]{calibrate_links()}} for each refit (by default with fewer
-draws than \code{\link[=calibrate_links]{calibrate_links()}}: the scores only need the posterior mean
-of the probabilities).}
+\item{method, monotone, prior_sd, prior_sigma, n_chains, n_iter, n_warmup, quadrature}{Passed to \code{\link[=calibrate_links]{calibrate_links()}} for each refit (by default with fewer
+draws than \code{\link[=calibrate_links]{calibrate_links()}}, and the chains of the decay model make
+2 random-walk steps per draw instead of 20: the scores only need the
+posterior mean of the probabilities; those of the ordered classes,
+\code{monotone = TRUE}, make 10, as in \code{\link[=calibrate_links]{calibrate_links()}}).}
 
 \item{seed}{\code{NULL} (default) to use the current random number stream, or a
 number. When given, the result is reproducible and the global random
@@ -36,8 +39,10 @@ An object of class \code{bwebs_score}, a list with
 \item \code{webs}: one row per validation web with the pairs evaluated, recorded,
 predicted and predicted-and-recorded links, \code{n_uncalibrated} (inferred
 links of a class without data in the other systems, given probability
-0), \code{brier}, \code{p_reference}, \code{brier_reference}, \code{skill}, \code{tss},
-\code{precision} and \code{recall};
+0), \code{n_missed} (recorded links not inferred), \code{expected_background}
+(links expected among the pairs not inferred; 0 without the decay),
+\code{brier}, \code{p_reference}, \code{brier_reference}, \code{skill}, \code{tss}, \code{precision}
+and \code{recall};
 \item \code{summary}: one row with the number of webs and the mean of each score
 over webs (\code{brier_se}: its standard error);
 \item \code{probabilities}: the probability of each class used for each web;
@@ -50,16 +55,18 @@ probabilities, predicts the links of webs that took no part in the
 calibration. Each validation system of \code{\link[=validate_rule]{validate_rule()}} is left out of
 the calibration in turn; its inferred links take the probability of their
 class in a new system under the calibration fitted to the other systems,
-the pairs without an inferred link take probability 0, and the
-predictions are compared with the links recorded in the web.
+the pairs without an inferred link take probability 0 or, with
+\code{decay = TRUE} in the rule, the probability of their evidence under the
+decay model fitted to the other systems, and the predictions are compared
+with the links recorded in the web.
 }
 \details{
 For web \eqn{w} with \eqn{N_w} pairs evaluated (see \code{\link[=validate_rule]{validate_rule()}}),
 the Brier score is \eqn{B_w = N_w^{-1} \sum_{ij} (p_{ij} - y_{ij})^2}{B =
-mean((p - y)^2)}, where \eqn{y_{ij} = 1} if the link was recorded: a
-recorded link that was not inferred costs 1, an inferred link of
-probability \eqn{p} costs \eqn{(1 - p)^2} if recorded and \eqn{p^2}
-otherwise. Lower is better. \code{brier_reference} is the score of a null
+mean((p - y)^2)}, where \eqn{y_{ij} = 1} if the link was recorded: a pair
+of probability \eqn{p} costs \eqn{(1 - p)^2} if recorded and \eqn{p^2}
+otherwise, so that without the decay a recorded link that was not
+inferred costs 1. Lower is better. \code{brier_reference} is the score of a null
 model that gives every pair the same probability, \code{p_reference}: the mean
 connectance (recorded links over pairs evaluated) of the webs of the other
 systems. \code{skill}

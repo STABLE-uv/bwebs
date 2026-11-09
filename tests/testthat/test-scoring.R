@@ -31,7 +31,7 @@ test_that("score_rule() refits without the system of each web", {
   v <- structure(list(counts = counts, webs = webs,
                       settings = list(rule = matching_rule(), sources = webs$study_id)),
                  class = "bwebs_validation")
-  s <- score_rule(v, method = "ml")
+  s <- score_rule(v, method = "ml", monotone = FALSE)
   expect_s3_class(s, "bwebs_score")
   fit_a <- fit_calibration(counts[counts$study_id %in% c("c", "d"), ], 20)
   p_a <- stats::setNames(fit_a$coefficients$p_new, fit_a$coefficients$evidence_class)
@@ -48,6 +48,14 @@ test_that("score_rule() refits without the system of each web", {
   expect_equal(s$webs$skill[1], ref_a$skill)
   expect_identical(sort(unique(s$probabilities$study_id)), c("a", "b", "c", "d"))
   expect_equal(s$summary$brier, mean(s$webs$brier))
+  # with the classes ordered, each refit is the monotone fit
+  so <- score_rule(v, method = "ml", monotone = TRUE)
+  fo <- fit_calibration(counts[counts$study_id %in% c("c", "d"), ], 20, monotone = TRUE)
+  po <- stats::setNames(fo$coefficients$p_new, fo$coefficients$evidence_class)
+  ref_o <- web_brier(counts[counts$study_id == "a", ], po, 400, webs$n_recorded[1],
+                     webs$n_predicted[1], webs$n_predicted_observed[1], p_ref_a)
+  expect_equal(so$webs$brier[1], ref_o$brier)
+  expect_true(so$settings$monotone)
   expect_error(score_rule(list()), "validate_rule")
 })
 
@@ -62,7 +70,8 @@ test_that("candidate rules form the documented grid", {
 })
 
 test_that("score_metaweb() scores the probabilities of a metaweb against observed links", {
-  nodes <- prepare_nodes(tiny_taxa(), rule = matching_rule(mode = "fixed", base_level = "family", climb_max = "family"))
+  nodes <- prepare_nodes(tiny_taxa(), rule = matching_rule(mode = "fixed", base_level = "family",
+                                                          climb_max = "family", decay = FALSE))
   mw <- build_metaweb(nodes, tiny_registry())
   cal <- fake_calibration(c(genus = 1, family = -1, order = 0), sigma = 1,
                           rule = matching_rule(mode = "fixed", base_level = "family", climb_max = "family"))

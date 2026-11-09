@@ -28,6 +28,8 @@
 #   Rscript dev/validation/compare_sources.R <globi_registry.rds> merge
 #   Rscript dev/validation/compare_sources.R <globi_registry.rds> tuesday
 pkgload::load_all(".", quiet = TRUE)
+# Without the taxonomic decay (decay = FALSE), as when these results were
+# computed (before version 0.3.0).
 args <- commandArgs(trailingOnly = TRUE)
 g <- readRDS(args[1])
 mode <- args[2]
@@ -44,15 +46,17 @@ selected <- c("climb/family/class/5", "climb/family/class/1", "climb/genus/class
 above_family <- c("climb/family/class/5", "climb/family/class/1", "climb/genus/class/1",
                   "climb/family/order/1", "ladder/class/1")
 sources <- list(
-  gray = list(rules = candidate_rules(primary_registry = "gray2015")[selected], train = "gray2015"),
-  globi = list(rules = candidate_rules(primary_registry = "globi")[selected], train = "globi"),
-  both_family = list(rules = candidate_rules(primary_registry = "gray2015")[selected], train = NULL),
+  gray = list(rules = candidate_rules(primary_registry = "gray2015", decay = FALSE)[selected], train = "gray2015"),
+  globi = list(rules = candidate_rules(primary_registry = "globi", decay = FALSE)[selected], train = "globi"),
+  both_family = list(rules = candidate_rules(primary_registry = "gray2015", decay = FALSE)[selected],
+                     train = NULL),
   both_class = list(rules = candidate_rules(primary_registry = "gray2015",
-                                            supplementary_max_level = "class")[above_family],
+                                            supplementary_max_level = "class", decay = FALSE)[above_family],
                     train = NULL),
   # both at every level and also for downward inheritance (the default of
   # matching_rule(), primary_registry = NULL)
-  both_all = list(rules = candidate_rules(primary_registry = NULL)[selected], train = NULL)
+  both_all = list(rules = candidate_rules(primary_registry = NULL, decay = FALSE)[selected],
+                  train = NULL)
 )
 file_of <- function(s) file.path(out_dir, sprintf("source_comparison_%s.rds", s))
 
@@ -70,7 +74,8 @@ if (mode == "source") {
   }
   t0 <- Sys.time()
   cmp <- compare_rules(both, sources = src, groups = groups, rules = rules,
-                       train_registries = cfg$train, exclusions = g$exclusions, seed = 2026)
+                       train_registries = cfg$train, exclusions = g$exclusions,
+                       monotone = FALSE, seed = 2026)
   cat("time:", format(Sys.time() - t0), "\n")
   print(cmp, n = 30)
   saveRDS(cmp, out_file)
@@ -157,7 +162,7 @@ if (mode == "tuesday") {
     reg_s <- if (is.null(sources[[s]]$train)) both else
       both[both$registry %in% sources[[s]]$train, , drop = FALSE]
     v <- cmp$validations[[nm]]
-    list(calibration = calibrate_links(v, seed = 2026, quiet = TRUE),
+    list(calibration = calibrate_links(v, monotone = FALSE, seed = 2026, quiet = TRUE),
          metaweb = build_metaweb(prepare_nodes(tuesday_lake_taxa, rule = v$settings$rule), reg_s))
   }
   rows <- list()

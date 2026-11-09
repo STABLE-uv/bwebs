@@ -11,7 +11,9 @@
 pkgload::load_all(".", quiet = TRUE)
 args <- commandArgs(trailingOnly = TRUE)
 out_dir <- file.path("dev", "validation")
-rules <- candidate_rules()
+# Without the taxonomic decay (matching_rule(decay = FALSE)), as when these
+# results were computed (before version 0.3.0).
+rules <- candidate_rules(decay = FALSE)
 if (length(args) == 2L && args[1] == "merge") {
   parts <- lapply(seq_len(as.integer(args[2])), function(k) {
     readRDS(file.path(out_dir, sprintf("rule_comparison_gray_part%d.rds", k)))
@@ -59,7 +61,8 @@ reg <- gray2015[gray2015$study_id != "12", ]
 src <- setdiff(gray2015_sources$study_id[gray2015_sources$validation], "12")
 groups <- list(c("13", "50"))
 t0 <- Sys.time()
-cmp <- compare_rules(reg, sources = src, groups = groups, rules = rules, seed = 2026)
+cmp <- compare_rules(reg, sources = src, groups = groups, rules = rules, monotone = FALSE,
+                     seed = 2026)
 cat("time:", format(Sys.time() - t0), "\n")
 print(cmp, n = 30)
 saveRDS(cmp, file.path(out_dir, if (n_parts == 1L) "rule_comparison_gray.rds" else

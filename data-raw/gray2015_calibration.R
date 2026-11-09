@@ -8,8 +8,9 @@
 # Rule: matching_rule() with its defaults (the combination with the lowest
 # cross-validated Brier score, dev/validation/compare_sources.R; with a single
 # registry, using every registry at every level is the same as naming it the
-# primary one). Bayesian fit, 4 chains x 4000 draws, seed 2026.
-# Takes about five minutes. Packages used only here: pkgload, usethis.
+# primary one), with the taxonomic decay of the pairs not inferred. Bayesian
+# fit, 4 chains x 4000 draws, seed 2026 (the decay model keeps 4000 draws).
+# Takes about 15 minutes. Packages used only here: pkgload, usethis.
 #
 # Run from the package root after data-raw/gray2015.R:
 #   Rscript data-raw/gray2015_calibration.R

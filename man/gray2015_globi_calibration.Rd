@@ -14,10 +14,12 @@ An object of class \code{bwebs_calibration} (see \code{\link[=calibrate_links]{c
 gray2015_globi_calibration
 }
 \description{
-The Bayesian calibration (\code{\link[=calibrate_links]{calibrate_links()}}, 4 chains of 4000 draws) of
-\link{gray2015} combined with records of Global Biotic Interactions (GloBI),
-with the default \code{\link[=matching_rule]{matching_rule()}} (every registry at every level) and the
-13 validation webs marked in \link{gray2015_sources}. Studies 13 and 50 are left
+The Bayesian calibration (\code{\link[=calibrate_links]{calibrate_links()}}, 4 chains of 4000 draws,
+ordered classes of evidence) of \link{gray2015} combined with records of
+Global Biotic Interactions (GloBI),
+with the default \code{\link[=matching_rule]{matching_rule()}} (every registry at every level, with
+the taxonomic decay of the pairs not inferred) and the 13 validation webs
+marked in \link{gray2015_sources}. Studies 13 and 50 are left
 out together, and when each web is rebuilt the GloBI studies holding at
 least 10\% of its links are left out too (copies of the web in other
 compilations; for Tuesday Lake, study 12, also the GloBI studies that copy
@@ -30,7 +32,8 @@ queried by name, genus and family, as here).
 The GloBI records were downloaded on 3 November 2026 for the consumers of
 the validation webs, of Tuesday Lake and of the azoxystrobin experiment of
 Amador et al. (2024); they are not included in the package (their licences
-depend on each source). Only the counts of the validation and the
-posterior draws are.
+depend on each source). Only the counts of the validation (by class of
+evidence, and by evidence profile for the decay) and the posterior draws
+are.
 }
 \keyword{datasets}

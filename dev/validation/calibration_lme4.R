@@ -3,8 +3,10 @@ pkgload::load_all(".", quiet = TRUE)
 src <- gray2015_sources$study_id[gray2015_sources$validation]
 t0 <- Sys.time()
 # Maximum likelihood fit (method = "ml"): the one compared with lme4.
+# (the class model only: without the taxonomic decay)
 cal <- calibrate_links(gray2015, sources = src, groups = gray2015_calibration$settings$groups,
-                       method = "ml", quiet = TRUE)
+                       rule = matching_rule(decay = FALSE), method = "ml", monotone = FALSE,
+                       quiet = TRUE)
 cat("time:", format(Sys.time() - t0), "\n")
 print(cal)
 print(cal$webs)

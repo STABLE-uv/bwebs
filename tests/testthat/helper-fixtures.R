@@ -47,18 +47,32 @@ tiny_taxa <- function() {
 }
 
 # The rule of the reanalysis of Amador et al. (2024), the one the hand-derived
-# expectations of the tests were written for (independent of the defaults).
-tiny_rule <- function(...) {
-  matching_rule(mode = "climb", base_level = "family", climb_max = "class", min_partners = 1L, ...)
+# expectations of the tests were written for (independent of the defaults),
+# without the taxonomic decay unless asked (test-decay.R).
+tiny_rule <- function(..., decay = FALSE) {
+  matching_rule(mode = "climb", base_level = "family", climb_max = "class", min_partners = 1L,
+                decay = decay, ...)
 }
 
 edge_keys <- function(edges) {
   sort(paste(edges$resource, edges$consumer, sep = ">"), method = "radix")
 }
 
+# A decay model with known parameters (no fitting), for sampling and scoring
+# tests.
+fake_decay <- function(theta = c(-2, 0.5, 0.5, 0.5, 0.5, 0.3, 0.3, 0.3, 0.6, 0.5, log(0.8)),
+                       se = 0.01) {
+  names(theta) <- decay_names()
+  V <- diag(se^2, length(theta))
+  dimnames(V) <- list(names(theta), names(theta))
+  list(effects = NULL, probabilities = decay_probability_table(theta), sigma = exp(theta[[11]]),
+       theta = theta, vcov = V, draws = NULL, counts = data.frame(), webs = data.frame(),
+       diagnostics = list(converged = TRUE, information_pd = TRUE))
+}
+
 # A calibration object with known coefficients (no fitting), for sampling tests.
 fake_calibration <- function(alpha, sigma = 1, se = 0.01, rule = tiny_rule(),
-                             registries = "gray2015") {
+                             registries = "gray2015", decay = NULL) {
   theta <- c(alpha, log_sigma = log(sigma))
   V <- diag(se^2, length(theta))
   dimnames(V) <- list(names(theta), names(theta))
@@ -73,7 +87,7 @@ fake_calibration <- function(alpha, sigma = 1, se = 0.01, rule = tiny_rule(),
                                 stringsAsFactors = FALSE),
       sigma = sigma, theta = theta,
       vcov = V, draws = NULL,
-      counts = data.frame(), webs = data.frame(),
+      counts = data.frame(), webs = data.frame(), decay = decay,
       settings = list(rule = rule, sources = c("a", "b", "c"), registries = registries,
                       n_records = 1L, quadrature = 20L),
       diagnostics = list(converged = TRUE, information_pd = TRUE, message = NA_character_,
@@ -104,4 +118,14 @@ two_web_records <- function() {
     res_category = c("producer", "invertebrate", "producer", "invertebrate", "producer")
   )
   rec
+}
+
+# Metaweb of the tiny registry with the decay, and a calibration whose
+# classes and decay are known.
+decay_setup <- function() {
+  nodes <- prepare_nodes(tiny_taxa(), rule = tiny_rule(decay = TRUE))
+  mw <- build_metaweb(nodes, tiny_registry())
+  cal <- fake_calibration(c(exact = 1, genus = 0.5, family = 0, order = -0.5, class = -1),
+                          rule = tiny_rule(decay = TRUE), decay = fake_decay())
+  list(nodes = nodes, mw = mw, cal = cal)
 }

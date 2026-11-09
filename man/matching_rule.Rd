@@ -18,7 +18,8 @@ matching_rule(
   generic_groups = default_generic_groups(),
   exceptions = default_exceptions(),
   manual_diet = character(0),
-  max_iter = 5L
+  max_iter = 5L,
+  decay = TRUE
 )
 }
 \arguments{
@@ -78,6 +79,15 @@ from manual links (they are not matched as consumers).}
 \item{max_iter}{Maximum number of passes used to stabilise the levels
 (the number of partners of a node depends on the levels of its
 partners).}
+
+\item{decay}{If \code{TRUE} (default), the resource → consumer pairs that the
+rule does not infer get a probability from the taxonomic distance decay
+instead of 0 (see Details): the closer the recorded diets of the
+relatives of the consumer come to the resource, the more probable the
+link. The decay is fitted by \code{\link[=calibrate_links]{calibrate_links()}} and used by
+\code{\link[=sample_metawebs]{sample_metawebs()}}, \code{\link[=score_rule]{score_rule()}} and \code{\link[=score_metaweb]{score_metaweb()}}; the
+deterministic metaweb of \code{\link[=build_metaweb]{build_metaweb()}} keeps only the inferred
+links. \code{FALSE} gives those pairs probability 0, as in WebBuilder.}
 }
 \value{
 An object of class \code{bwebs_rule}: a named list with the arguments
@@ -102,7 +112,10 @@ vignette): start at family and climb up to class until a node links with
 at least five other nodes, using the records of every registry at every
 level. The rule of the reanalysis of Amador et al. (2024) that this package
 was written from is the same with \code{min_partners = 1}, whose score was
-indistinguishable. The ladder of taxonomic
+indistinguishable. The taxonomic decay of the pairs not inferred
+(\code{decay}), added afterwards, lowered the cross-validated Brier score of
+the default rule with the Gray registry, left it unchanged with Gray +
+GloBI and improved the scores on Tuesday Lake. The ladder of taxonomic
 generalisation follows the WebBuilder method of Gray et al. (2015); the
 climbing rule, the evidence threshold, the downward inheritance and the
 generic resource groups are extensions of that method (see Details).
@@ -129,6 +142,18 @@ al. (2015): from the node's own rank, the first level that links the node
 with at least \code{min_partners} nodes, without accumulating records. If no
 level reaches the threshold, the finest level with at least one partner is
 used, and failing that the finest level with at least one record.
+
+Taxonomic distance decay (\code{decay = TRUE}). For a pair without an inferred
+link, the consumer is resolved at the closest level, from its family on
+(its order, class, phylum, or any consumer), whose consumers have at
+least one resource recorded in the registry (records of the consumer
+itself, its genus or its subfamily count at the family), and the resource
+at the closest level (its own taxon, genus, subfamily, family, order,
+class, phylum or none) at which it is related to a resource of those
+records; a record of a generic group that applies to the resource also
+counts. The probability of the pair decreases with both levels and is
+never 0 (see \code{\link[=calibrate_links]{calibrate_links()}}). Cannibalism, the pairs removed by
+manual links and the diets of basal and \code{manual_diet} nodes stay at 0.
 }
 \examples{
 matching_rule()

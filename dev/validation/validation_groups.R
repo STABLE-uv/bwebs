@@ -28,7 +28,11 @@ options_groups <- list(
   shared_links = list(c("13", "50")),
   shared_links_and_authors = list(c("13", "50"), c("46", "49"), c("15", "59"))
 )
+# Without the taxonomic decay (matching_rule(decay = FALSE)), as when these
+# results were computed (before version 0.3.0).
+rule <- matching_rule(decay = FALSE)
 cals <- lapply(options_groups, function(g) calibrate_links(gray2015, sources = val, groups = g,
+                                                            rule = rule, monotone = FALSE,
                                                             quiet = TRUE))
 coef_table <- do.call(rbind, lapply(names(cals), function(nm) {
   co <- cals[[nm]]$coefficients
@@ -38,7 +42,7 @@ coef_table <- do.call(rbind, lapply(names(cals), function(nm) {
 print(reshape(coef_table, idvar = c("class"), timevar = "groups", direction = "wide"),
       row.names = FALSE)
 
-nodes <- prepare_nodes(example_taxa)
+nodes <- prepare_nodes(example_taxa, rule = rule)
 mw <- build_metaweb(nodes, gray2015)
 example_for <- function(cal, system) {
   dr <- sample_metawebs(mw, cal, n_draws = 1000, system = system, seed = 2026)

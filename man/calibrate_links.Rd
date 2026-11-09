@@ -10,6 +10,7 @@ calibrate_links(
   groups = NULL,
   rule = matching_rule(),
   method = "bayes",
+  monotone = TRUE,
   prior_sd = 1.5,
   prior_sigma = 2.5,
   n_chains = 4L,
@@ -31,6 +32,12 @@ The calibration only applies to metawebs built with the same rule.}
 
 \item{method}{\code{"bayes"} (default): posterior by MCMC with the priors below;
 \code{"ml"}: maximum marginal likelihood with a normal approximation.}
+
+\item{monotone}{If \code{TRUE} (default), a closer class of evidence is never
+less probable than a more distant one: the coefficients of the classes
+\code{"exact"}, \code{"genus"}, \code{"subfamily"}, \code{"family"}, \code{"order"}, \code{"class"}
+and \code{"beyond"} never increase in that order (see Details); \code{"generic"}
+is free. \code{FALSE} gives every class its own coefficient, as in 0.2.0.}
 
 \item{prior_sd}{Standard deviation of the normal prior, centred at 0, of
 each class coefficient on the logit scale (positive number).}
@@ -70,8 +77,18 @@ information);
 \code{method = "ml"});
 \item \code{counts} and \code{webs}: from the validation, with the web effects
 (conditional modes at \code{theta});
-\item \code{settings} (rule, sources, groups, exclusions, registries, method, priors,
-chains)
+\item \code{decay} (with \code{decay = TRUE} in the rule, otherwise \code{NULL}): the model
+of the pairs without an inferred link, a list with \code{effects} (one row
+per consumer level, resource level and for generic records, with the
+effect on the logit scale as \code{estimate}, \code{std_error}, \code{lower} and
+\code{upper}, as for the classes), \code{probabilities} (every evidence profile,
+with \code{p_average}, \code{p_new} and the number of \code{webs}, \code{pairs} and
+\code{observed} links behind it), \code{sigma}, \code{theta}, \code{vcov}, \code{draws} (at most
+4000 posterior draws, evenly spaced; \code{NULL} with \code{method = "ml"}),
+\code{counts} (from the validation), \code{webs} (pairs, recorded links and web
+effect of each validation web) and \code{diagnostics};
+\item \code{settings} (rule, sources, groups, exclusions, registries, method,
+\code{monotone}, priors, chains)
 and \code{diagnostics} (convergence, positive-definite information at the
 mode, \code{rhat} and \code{ess} of every parameter, acceptance rate of each chain,
 classes without data).
@@ -84,9 +101,14 @@ communities, from the held-out webs of \code{\link[=validate_rule]{validate_rule
 study of the registry is rebuilt from the rest of the registry (without
 the studies of its system) and its inferred links are compared with the
 recorded ones, as in the validation of Gray et al. (2015, section 2.3,
-p. 15). A logistic model with one coefficient per class of evidence and a
-random effect of the validation web is fitted to the counts, by default as
-a Bayesian model whose posterior is sampled by Markov chain Monte Carlo.
+p. 15). A logistic model with one coefficient per class of evidence
+(ordered by default, so that a link supported by a closer relative is never
+less probable) and a random effect of the validation web is fitted to the
+counts, by default as a Bayesian model whose posterior is sampled by
+Markov chain Monte Carlo.
+With \code{decay = TRUE} in the rule (the default), a second model of the same
+form gives a probability to the pairs without an inferred link, from their
+evidence for the taxonomic distance decay (see \code{\link[=matching_rule]{matching_rule()}}).
 }
 \details{
 For the validation web \eqn{w}, with \eqn{y_{cw}} of the \eqn{m_{cw}}
@@ -104,23 +126,80 @@ random-walk Metropolis algorithm started at the posterior mode; the
 proposal is tuned during the warm-up and fixed afterwards. Check
 \code{diagnostics$rhat} (close to 1) and \code{diagnostics$ess}.
 
-Interpretation. The probability is that of observing an inferred link in a
+Ordered classes (\code{monotone = TRUE}). The classes of evidence that are
+taxonomic levels are ordered from the closest relation to the most
+distant (exact, genus, subfamily, family, order, class, beyond), and
+\eqn{\alpha_c = a - \sum_{k \le c} \delta_k}{alpha[c] = a - sum of the
+steps delta[k] down to c}, with one step \eqn{\delta_k \ge 0}{delta[k] >=
+0} from each class present to the next: a link supported by a closer
+relative is never less probable. Priors: \eqn{a \sim N(0,
+s_\alpha^2)}{a ~ N(0, prior_sd^2)} for the closest class, \eqn{\delta_k
+\sim \textrm{half-}N(0, s_\alpha^2)}{delta[k] ~ half-normal(0,
+prior_sd^2)}, the coefficient of \code{"generic"} \eqn{\sim N(0,
+s_\alpha^2)}{~ N(0, prior_sd^2)}. The posterior is sampled with the
+reflecting random walk of the decay model (10 steps per draw kept); the
+coefficients reported and their draws are the \eqn{\alpha_c}{alpha[c]}.
+In the cross-validation of the default rule (12 webs left out by system)
+the ordered and the free classes scored the same within their standard
+errors with the three registries compared (Gray, Gray + GloBI, Gray +
+GATEWAy). The free coefficients broke the order (with Gray + GloBI, links
+that needed an order were more probable than links of the same family),
+so the ordered classes are the default.
+
+Amount of evidence. The probability of a link depends on its class of
+evidence only, not on how much evidence supports it (the studies, records
+and relatives of \code{edges} in \code{\link[=build_metaweb]{build_metaweb()}}): in the same
+cross-validation, none of those amounts, nor the shares of the relatives
+of the consumer and of the resource that support a link, improved the
+prediction of the links of the webs left out with the three registries;
+their effects changed sign from one registry to another.
+
+Taxonomic decay. With \code{decay = TRUE} in the rule, the pairs of validation
+web \eqn{w} without an inferred link are grouped by their evidence (see
+\code{\link[=matching_rule]{matching_rule()}}): the level \eqn{c} at which the consumer is resolved
+(family, order, class, phylum or any consumer), the level \eqn{r} at
+which the resource is related to its recorded diet (within the family of
+a recorded resource, order, class, phylum or not related, "any") and
+whether a record of a generic group applies to the resource (\eqn{g =
+1}). Of the \eqn{m} pairs of a group, \eqn{y} were recorded:
+\deqn{y \sim \mathrm{Binomial}(m, p), \quad \mathrm{logit}\, p = a_c + b_r +
+\gamma g + \beta \log(n_w / 50) + v_w, \quad v_w \sim N(0, \tau^2)}{y ~
+Binomial(m, p), logit(p) = a[c] + b[r] + gamma g + beta log(n[w] / 50) +
+v[w], v[w] ~ N(0, tau^2)}
+where \eqn{n_w}{n[w]} is the number of nodes of the web (connectance
+usually falls as webs grow), \eqn{a} decreases from the family to "any"
+consumer and \eqn{b} increases from "any" resource (\eqn{b = 0}) to a
+resource within the family of a recorded one, by steps \eqn{\ge 0}, so
+that closer evidence never gives a lower probability. Priors:
+\eqn{a_{family}}{a[family]}, \eqn{\gamma}{gamma} and \eqn{\beta}{beta}
+\eqn{\sim N(0, s_\alpha^2)}{~ N(0, prior_sd^2)}, each step \eqn{\sim
+\textrm{half-}N(0, s_\alpha^2)}{~ half-normal(0, prior_sd^2)} and
+\eqn{\tau \sim \textrm{half-}N(0, s_\sigma^2)}{tau ~ half-normal(0,
+prior_sigma^2)}. It is fitted with the same method, number
+of chains, draws and seed as the class model; its chains make 20
+random-walk steps per draw kept, with the proposals of the steps
+reflected at 0. Its web effect is independent of that of the classes.
+
+Interpretation. The probability is that of observing a link in a
 comparable, well-studied community; because the validation webs miss rare
-links, it is a lower bound for the existence of the link. Pairs without an
-inferred link are not modelled: in a registry web, a taxon is listed
-because it eats or is eaten, so the proportion of recorded links among the
-pairs not inferred in those webs does not transfer to communities sampled
-independently of their diets.
+links, it is a lower bound for the existence of the link. In the
+validation webs a taxon is listed because it eats or is eaten, so the
+probability of the pairs without an inferred link may not transfer
+exactly to communities sampled independently of their diets; Tuesday
+Lake, an independent test, is reported in the vignette.
 }
 \section{Missing values and zeros}{
 
 A class of evidence that never occurs in the validation webs gets no
-coefficient; \code{\link[=sample_metawebs]{sample_metawebs()}} then asks what to do with its links.
+coefficient; \code{\link[=sample_metawebs]{sample_metawebs()}} then asks what to do with its links. An
+evidence profile of the decay without data takes the probability given by
+the effects of its levels.
 }
 
 \section{Assumptions}{
 
-Links are recorded independently given their class and web; the
+Links are recorded independently given their class (or their evidence
+for the decay) and web; the
 validation webs are a sample of the communities to which the calibration
 is applied; the links recorded in a validation web are true links; no
 study left in the registry describes the same system as the web left out
@@ -141,6 +220,7 @@ compendia of published interactions. \emph{Food Webs}, 5, 11--20.
 \doi{10.1016/j.fooweb.2015.09.001}
 }
 \seealso{
-\link{gray2015_calibration} for the calibration of the bundled
-registry; \code{\link[=sample_metawebs]{sample_metawebs()}}; \code{\link[=score_rule]{score_rule()}}.
+\link{gray2015_gateway_calibration} and \link{gray2015_calibration} for
+the calibrations of the bundled registries; \code{\link[=sample_metawebs]{sample_metawebs()}};
+\code{\link[=score_rule]{score_rule()}}.
 }

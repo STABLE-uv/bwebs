@@ -7,21 +7,29 @@ library(bwebs)
 nodes <- prepare_nodes(example_taxa)
 nodes
 
-# 2. Deterministic metaweb with the evidence of each link
-mw <- build_metaweb(nodes, gray2015)
+# 2. Deterministic metaweb with the evidence of each link (the bundled
+#    registries of Gray et al. 2015 and of the freshwater webs of GATEWAy)
+registry <- combine_registries(gray2015, gateway)
+mw <- build_metaweb(nodes, registry)
 mw
 table(mw$edges$evidence_class)
 
-# 3. Bayesian calibration of the Gray registry (bundled; computed again with
-#    calibrate_links(validate_rule(gray2015, sources = ...)))
-gray2015_calibration
+# 3. Bayesian calibration of those registries (bundled; computed again with
+#    data-raw/gray2015_gateway_calibration.R)
+gray2015_gateway_calibration
 
 # 3b. How the default rule was chosen (cross-validation by system and test on
 #     Tuesday Lake)
 head(gray2015_rule_comparison[, c("rule", "brier", "brier_diff", "brier_diff_se", "tl_brier")])
 
-# 4. Plausible metawebs
-draws <- sample_metawebs(mw, gray2015_calibration, n_draws = 50, seed = 2026)
+# 3c. Probability of every resource -> consumer pair (inferred links by their
+#     class of evidence, the other pairs by the taxonomic decay)
+P <- link_probabilities(mw, gray2015_gateway_calibration)
+round(P[c("cocconeis_placentula", "cpom", "baetis_rhodani", "simulium"),
+        c("gammarus_pulex", "cordulegaster_boltonii")], 2)
+
+# 4. Plausible metawebs drawn from those probabilities
+draws <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 50, seed = 2026)
 draws
 
 # 5. Indicators of each sample in each draw (detritus is not sampled: it is a

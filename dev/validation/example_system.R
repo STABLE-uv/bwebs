@@ -2,7 +2,9 @@
 # (system = "random", the default) against a typical system ("average"),
 # 1000 draws. Run from the root of the package.
 pkgload::load_all(".", quiet = TRUE)
-nodes <- prepare_nodes(example_taxa)
+# Without the taxonomic decay (matching_rule(decay = FALSE)), as when these
+# results were computed (before version 0.3.0).
+nodes <- prepare_nodes(example_taxa, rule = matching_rule(decay = FALSE))
 mw <- build_metaweb(nodes, gray2015)
 for (system in c("random", "average")) {
   dr <- sample_metawebs(mw, gray2015_calibration, n_draws = 1000, system = system, seed = 2026)

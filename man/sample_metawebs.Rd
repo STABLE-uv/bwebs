@@ -11,6 +11,8 @@ sample_metawebs(
   system = "random",
   parameter_uncertainty = TRUE,
   uncalibrated = NULL,
+  masses = NULL,
+  size_model = NULL,
   seed = NULL
 )
 }
@@ -18,9 +20,10 @@ sample_metawebs(
 \item{metaweb}{A metaweb from \code{\link[=build_metaweb]{build_metaweb()}}.}
 
 \item{calibration}{A calibration from \code{\link[=calibrate_links]{calibrate_links()}} fitted with the
-same matching rule and registries, such as \link{gray2015_calibration} for
-metawebs built with \link{gray2015} (a warning is given when the registries
-differ).}
+same matching rule and registries, such as \link{gray2015_gateway_calibration}
+for metawebs built with \code{combine_registries(gray2015, gateway)} or
+\link{gray2015_calibration} for metawebs built with \link{gray2015} (a warning is
+given when the registries differ).}
 
 \item{n_draws}{Number of draws (positive whole number).}
 
@@ -28,7 +31,9 @@ differ).}
 from the distribution of web effects in each draw (an unknown system,
 the more conservative choice, with wide intervals); \code{"average"} fixes it
 at 0 (a system like the average validation web); a number fixes it at
-that value.}
+that value. The decay model has its own system effect, drawn
+independently from its own distribution, set to 0 or to the same
+number.}
 
 \item{parameter_uncertainty}{If \code{TRUE}, the class coefficients and the
 standard deviation of the web effect of each draw are taken from the
@@ -42,6 +47,16 @@ because they are supported only by registries that were not used in the
 calibration (such as GloBI with \link{gray2015_calibration}): \code{NULL}
 (default) stops and lists them; \code{"exclude"} gives them probability 0;
 \code{"keep"} probability 1.}
+
+\item{masses}{\code{NULL} (default, no size term) or the body masses of the
+nodes (mean individual mass, in any unit common to all nodes): a vector
+named by \code{node_id}, the same in every draw, or a matrix with one row per
+node (row names \code{node_id}) and one column per draw, such as the masses
+of the draws of a biomass model, so that each draw uses its own masses.
+Nodes without a mass (absent or \code{NA}) get no size term.}
+
+\item{size_model}{The effect of the predator/prey mass ratio used with
+\code{masses}; \code{NULL} (default) uses \link{size_model}.}
 
 \item{seed}{\code{NULL} (default) to use the current random number stream, or a
 number. When given, the result is reproducible and the global random
@@ -60,18 +75,34 @@ the link is present);
 \item \code{z}: logical matrix links x draws, \code{TRUE} when the link is present;
 \item \code{p}: matrix classes x draws of the probabilities used;
 \item \code{system_effect}: the effect of the system in each draw;
+\item \code{background} (with \code{decay = TRUE} in the rule, otherwise \code{NULL}): the
+pairs without a link drawn from the taxonomic decay, a list with \code{pairs}
+(the \code{decay} table of the metaweb with \code{p_mean} and \code{inclusion}),
+\code{present} (one integer vector per draw with the rows of \code{pairs} present
+in it), \code{p} (probability of each evidence profile in each draw) and
+\code{system_effect} (of the decay model);
+\item \code{masses} (with \code{masses}, otherwise \code{NULL}): the body masses used, a
+matrix nodes x draws (\code{NA} for nodes without a mass), so that draw
+\eqn{d} holds the links of a web (column \eqn{d} of \code{z} and element
+\eqn{d} of \code{background$present}) and the masses of its nodes (column
+\eqn{d} of \code{masses});
 \item \code{nodes}: the nodes of the metaweb;
-\item \code{settings}: the options used.
+\item \code{settings}: the options used (with \code{masses}, the size model).
 }
+
+With \code{masses}, \code{p_mean} of the links and of the pairs of the decay
+includes the size term; \code{p} does not.
 }
 \description{
 \code{sample_metawebs()} turns a deterministic metaweb into a set of plausible
 metawebs. In each draw, the probability of every class of evidence is
 drawn from the calibration (coefficients and, optionally, the effect of
 the system), and each inferred link is kept with the probability of its
-class. The same realisation is later shared by all the samples of a
-community in \code{\link[=calc_indicators]{calc_indicators()}}, so that differences between samples are
-computed within each draw.
+class. With \code{decay = TRUE} in the rule, every pair without a link of the
+metaweb is drawn too, with the probability of its evidence for the
+taxonomic distance decay (see \code{\link[=matching_rule]{matching_rule()}}). The same realisation is
+later shared by all the samples of a community in \code{\link[=calc_indicators]{calc_indicators()}}, so
+that differences between samples are computed within each draw.
 }
 \details{
 In draw \eqn{d}, with class coefficients \eqn{\alpha_c^{(d)}} and system
@@ -80,7 +111,26 @@ probability
 \deqn{p_{c(l)}^{(d)} = \mathrm{logit}^{-1}\left(\alpha_{c(l)}^{(d)} + u^{(d)}\right)}{
 p = plogis(alpha[c(l)] + u)}
 independently of the other links. Manual links are always present;
-cannibalistic links are left out, as in the indicators.
+cannibalistic links are left out, as in the indicators. With the decay, a
+pair without a link whose consumer is resolved at level \eqn{c}, whose
+resource is related at level \eqn{r} and with \eqn{g = 1} when a generic
+record applies is present with probability
+\deqn{\mathrm{logit}^{-1}\left(a_c^{(d)} + b_r^{(d)} + \gamma^{(d)} g +
+\beta^{(d)} \log(n / 50) + v^{(d)}\right)}{plogis(a[c] + b[r] + gamma g +
+beta log(n / 50) + v)}
+(see \code{\link[=calibrate_links]{calibrate_links()}}), where \eqn{n} is the number of nodes of the
+metaweb, with its own system effect \eqn{v^{(d)}}.
+
+Body masses. With \code{masses}, the logit of every predation pair (an animal
+resource, role \code{"consumer"}) whose two nodes have a mass in draw \eqn{d}
+is shifted by \eqn{w\, b\,(x - x^*)^2 \le 0}{w b (x - x*)^2 <= 0}, where
+\eqn{x = \log_{10}(M_{consumer} / M_{resource})}{x = log10(M_consumer /
+M_resource)} with the masses of that draw, \eqn{x^*} is the optimum ratio
+and \eqn{b < 0} the effect of \link{size_model}, and \eqn{w} is the weight of
+the links inferred by the rule or of the pairs of the decay. Links and
+pairs of other kinds, manual links and nodes without a mass are not
+affected. The same random numbers are used with and without \code{masses}, so
+that a draw changes only where the size term changes a probability.
 }
 \section{Reproducibility}{
 
@@ -90,9 +140,12 @@ other BLAS/LAPACK libraries.
 
 \examples{
 nodes <- prepare_nodes(example_taxa)
-mw <- build_metaweb(nodes, gray2015)
-draws <- sample_metawebs(mw, gray2015_calibration, n_draws = 20, seed = 1)
+mw <- build_metaweb(nodes, combine_registries(gray2015, gateway))
+draws <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 20, seed = 1)
 draws
+# with body masses (here invented, one per node)
+masses <- stats::setNames(10^stats::runif(nrow(nodes), -4, 1), nodes$node_id)
+sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 20, masses = masses, seed = 1)
 }
 \seealso{
 \code{\link[=calibrate_links]{calibrate_links()}}, \code{\link[=calc_indicators]{calc_indicators()}}.

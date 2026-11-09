@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Edit README.Rmd and render it with rmarkdown::render("README.Rmd", output_format = rmarkdown::github_document(html_preview = FALSE)) after installing the package. -->
 
-# bwebs
+# bwebs <picture><source media="(prefers-color-scheme: dark)" srcset="man/figures/logo-dark.png"><img src="man/figures/logo.png" align="right" height="139" alt="bwebs logo" /></picture>
 
 <!-- badges: start -->
 
@@ -16,19 +16,28 @@ published trophic interactions, and quantifies how uncertain those webs
 are. It infers the potential links among the taxa with the WebBuilder
 logic of Gray et al. (2015), estimates with a Bayesian hierarchical
 model how often links inferred with each kind of taxonomic evidence are
-observed in independent food webs, samples plausible webs from those
-probabilities and summarises their topological indicators (connectance,
-trophic levels, omnivory, trophic similarity, robustness…) with credible
-intervals, for every sample and for contrasts between groups of samples.
-The matching rule and the way of combining sources used by default were
-chosen among 21 rules and three sources (the Gray et al. registry,
-Global Biotic Interactions and both) by cross-validated Brier scores,
-and tested on an independent food web (Tuesday Lake).
+observed in independent food webs, gives the pairs without an inferred
+link a small probability that decays with the taxonomic distance to the
+nearest recorded interaction, lowers the probability of predation
+between taxa of implausible body sizes when their masses are known,
+samples plausible webs from those probabilities and summarises their
+topological indicators (connectance, trophic levels, omnivory, trophic
+similarity, robustness…) with credible intervals, for every sample and
+for contrasts between groups of samples. The matching rule and the way
+of combining sources used by default were chosen among 21 rules and
+several sources (the Gray et al. registry, Global Biotic Interactions,
+the freshwater food webs of GATEWAy and their combinations) by
+cross-validated Brier scores, and tested on an independent food web
+(Tuesday Lake).
 
 It ships the registry of 20,822 freshwater trophic interactions of Gray
-et al. (2015) (CC0), its calibration and the calibration of that
-registry combined with GloBI, the Tuesday Lake food webs of 1984 and
-1986 (from the cheddar package), and downloads interactions from Global
+et al. (2015) (CC0) and the 19,185 links of the 81 freshwater food webs
+of GATEWAy version 1.0 ([Brose et
+al. 2019](https://doi.org/10.1038/s41559-019-0899-x), CC BY 4.0), the
+calibrations of the Gray registry alone, combined with GATEWAy and
+combined with GloBI, the effect of body size on predation fitted to the
+aquatic webs of GATEWAy, the Tuesday Lake food webs of 1984 and 1986
+(from the cheddar package), and downloads interactions from Global
 Biotic Interactions (GloBI).
 
 ## Installation
@@ -54,31 +63,54 @@ library(bwebs)
 # 1. Nodes and their matching ladder
 nodes <- prepare_nodes(example_taxa)
 
-# 2. Metaweb of potential links, with the evidence of each link
-mw <- build_metaweb(nodes, gray2015)
+# 2. Metaweb of potential links, with the evidence of each link, from the
+#    bundled registries of Gray et al. (2015) and GATEWAy
+mw <- build_metaweb(nodes, combine_registries(gray2015, gateway))
 mw
-#> <bwebs_metaweb> 23 nodes, 180 links (7 cannibalistic, 0 manual)
-#>   registries: gray2015 (20822 records, 50 studies)
-#>   evidence of non-cannibalistic links: exact = 51, genus = 39, subfamily = 22, family = 35, order = 10, class = 11, generic = 5
+#> <bwebs_metaweb> 23 nodes, 185 links (7 cannibalistic, 0 manual)
+#>   registries: gateway, gray2015 (40007 records, 131 studies)
+#>   evidence of non-cannibalistic links: exact = 79, genus = 36, subfamily = 11, family = 27, order = 9, class = 12, generic = 4
+#>   pairs without a link, with a probability from the taxonomic decay: 196
 
-# 3. Calibration of the registry (bundled; refit with calibrate_links())
-gray2015_calibration
-#> <bwebs_calibration> 13 validation webs, 14497 links inferred, 36% observed
-#>   Bayesian: 4 chains x 4000 draws; max R-hat 1.001, min ESS 2982
-#>   web effect: sd = 1.58 on the logit scale; precision per web from 0.03 to 0.84
+# 3. Calibration of those registries (bundled; refit with calibrate_links())
+gray2015_gateway_calibration
+#> <bwebs_calibration> 13 validation webs, 17732 links inferred, 40% observed
+#>   Bayesian: 4 chains x 4000 draws; max R-hat 1.001, min ESS 5601
+#>   web effect: sd = 1.37 on the logit scale; precision per web from 0.11 to 0.79
+#>   classes ordered: a link supported by a closer relative is never less probable
 #>      class p_average p_new logit   sd webs predicted observed
-#>      exact     0.441 0.458 -0.24 0.37   12       549      181
-#>      genus     0.542 0.529  0.17 0.36   13      1725      806
-#>  subfamily     0.317 0.367 -0.79 0.37    9      1020      134
-#>     family     0.347 0.389 -0.65 0.36   13      4445     1410
-#>      order     0.246 0.311 -1.15 0.36   13      5138     1564
-#>      class     0.514 0.509  0.06 0.36    9       772      360
-#>    generic     0.735 0.673  1.05 0.37    3       848      716
+#>      exact     0.513 0.510  0.05 0.36   13       633      220
+#>      genus     0.508 0.506  0.03 0.36   13      2274     1151
+#>  subfamily     0.347 0.383 -0.65 0.36    9      1217      168
+#>     family     0.339 0.377 -0.69 0.36   13      5942     2386
+#>      order     0.256 0.309 -1.10 0.36   13      6173     2437
+#>      class     0.254 0.307 -1.11 0.36    8       931      343
+#>    generic     0.546 0.535  0.19 0.37    3       562      430
+#>   pairs not inferred (taxonomic decay): 12744, with 1571 recorded links; web effect sd = 0.71
+#>     probability in a new system from 0.026 to 0.423 (in a web of 50 nodes)
+#>     max R-hat 1.005, min ESS 4502
+#>     consumer resolved at (logit): family -1.71, order -1.72, class -1.74, phylum -4.12, any -5.32
+#>     resource related at (logit, added): family 1.34, order 0.13, class 0.03, phylum 0.02, any 0.00
+#>     record of a generic group (logit, added): 0.19
+#>     size of the web, per unit of log(nodes / 50) (logit, added): -0.37
 #>   studies left out together: 13 + 50
 #>   classes without validation data: beyond
 
-# 4. Plausible metawebs and the indicators of every sample in every draw
-draws <- sample_metawebs(mw, gray2015_calibration, n_draws = 100, seed = 2026)
+# 4. Probability of every resource -> consumer pair: the inferred links by
+#    their class of evidence, the other pairs by the taxonomic decay
+P <- link_probabilities(mw, gray2015_gateway_calibration)
+round(P[c("cocconeis_placentula", "cpom", "baetis_rhodani", "simulium"),
+        c("gammarus_pulex", "cordulegaster_boltonii")], 2)
+#>                       consumer
+#> resource               gammarus_pulex cordulegaster_boltonii
+#>   cocconeis_placentula           0.51                   0.22
+#>   cpom                           0.51                   0.22
+#>   baetis_rhodani                 0.51                   0.51
+#>   simulium                       0.38                   0.51
+
+# 5. Plausible metawebs drawn from those probabilities and the indicators of
+#    every sample in every draw
+draws <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 100, seed = 2026)
 ind <- calc_indicators(draws, example_community, permanent = c("cpom", "fpom"))
 
 # In draws with very few links a sample can be left without links: its
@@ -88,34 +120,34 @@ table(ind$values$status)
 #>  ok 
 #> 600
 
-# 5. Posterior summaries by treatment, and contrasts within draws; na_rm = TRUE
+# 6. Posterior summaries by treatment, and contrasts within draws; na_rm = TRUE
 #    leaves out the draws where an indicator is undefined (see n_missing)
 summarize_indicators(ind, indicators = c("S", "C", "TL_mean"), samples = example_samples,
                      by = "treatment", na_rm = TRUE)[, c(1:7, 13)]
 #>   treatment indicator   estimate     median         sd       lower      upper
-#> 1   control         S 20.8266667 22.6666667 3.14143948 10.98333333 22.6666667
-#> 2   control         C  0.1556690  0.1348730 0.08655611  0.04690575  0.3085218
-#> 3   control   TL_mean  1.9626812  2.0227572 0.17785763  1.55212121  2.2469187
-#> 4   exposed         S 15.8066667 17.0000000 2.92831680  7.30000000 17.6666667
-#> 5   exposed         C  0.1695114  0.1469401 0.08841923  0.05430532  0.3289044
-#> 6   exposed   TL_mean  1.8987903  1.9260954 0.20528825  1.52878788  2.3774009
+#> 1   control         S 22.3433333 22.6666667 0.96917126 19.14166667 22.6666667
+#> 2   control         C  0.2217898  0.2213667 0.08641947  0.07645585  0.3937160
+#> 3   control   TL_mean  2.9414976  2.6425319 1.04506993  2.12588236  5.4014313
+#> 4   exposed         S 17.0933333 17.6666667 1.35676383 13.15833333 17.6666667
+#> 5   exposed         C  0.2224491  0.2190299 0.08931976  0.08385978  0.4096948
+#> 6   exposed   TL_mean  2.5045546  2.2693784 0.86261897  1.95651176  4.2068389
 #>   n_omitted
 #> 1         0
 #> 2         0
 #> 3         0
 #> 4         0
 #> 5         0
-#> 6         0
+#> 6         1
 contrast_indicators(ind, example_samples, by = "treatment", reference = "control",
                     indicators = c("S", "C", "TL_mean"), na_rm = TRUE)[, c(1, 3:8, 10)]
-#>   level_compared indicator    estimate      median          sd        lower
-#> 1        exposed         S -5.02000000 -5.00000000 0.837960219 -6.683333333
-#> 2        exposed         C  0.01384247  0.01385827 0.008952192 -0.001109337
-#> 3        exposed   TL_mean -0.06389092 -0.08615261 0.090058811 -0.198963057
+#>   level_compared indicator      estimate       median         sd       lower
+#> 1        exposed         S -5.2500000000 -5.000000000 0.53260683 -7.00000000
+#> 2        exposed         C  0.0006593274  0.001689936 0.01498718 -0.02855937
+#> 3        exposed   TL_mean -0.4369429974 -0.355959125 0.79655833 -1.64818393
 #>         upper prob_positive
-#> 1 -3.33333333          0.00
-#> 2  0.03187356          0.95
-#> 3  0.13048214          0.15
+#> 1 -5.00000000          0.00
+#> 2  0.02599927          0.55
+#> 3  0.48769692          0.08
 ```
 
 ## Methods and decisions
@@ -142,31 +174,76 @@ contrast_indicators(ind, example_samples, by = "treatment", reference = "control
   generalisation with every source; the threshold (one or five partners)
   made no difference larger than its standard error. The result held
   without the secondary compilations of GloBI (metawebs and trait
-  databases).
+  databases). With the decay, the freshwater webs of GATEWAy lowered the
+  score of the Gray registry from 0.209 to 0.205 but raised that of
+  Gray + GloBI from 0.197 to 0.201: Gray + GloBI is the best
+  combination, and Gray + GATEWAy the best one that can be distributed
+  (`gray2015_gateway_calibration`, used in the examples).
 - **Class of evidence** (`build_metaweb()`): the taxonomic
   generalisation needed by the best record that supports each link (same
-  taxon, genus, subfamily, family, order, class, generic group).
+  taxon, genus, subfamily, family, order, class, generic group). Each
+  link also keeps how much evidence supports it: its records and
+  studies, and the relatives of the consumer and of the resource among
+  them.
 - **Calibration** (`validate_rule()`, `calibrate_links()`): a logistic
   model with one coefficient per class of evidence and a random effect
   of the web, fitted to how many inferred links were observed in the
   webs left out, with weakly informative priors and a posterior sampled
-  by Metropolis-Hastings. The probability of a link is that of observing
-  it in a comparable well-studied community, a lower bound for its
-  existence. Links that are not inferred are not modelled.
+  by Metropolis-Hastings. The classes are ordered (since 0.3.0): a link
+  supported by a closer relative is never less probable than one
+  supported by a more distant relative; free coefficients, which broke
+  that order, scored the same in the cross-validation. The probability
+  of a link is that of observing it in a comparable well-studied
+  community, a lower bound for its existence. It depends on the class
+  only: the amount of evidence of a link (studies, records, supporting
+  relatives, or the shares of the relatives that support it) did not
+  improve the predictions for the webs left out with any of the
+  registries compared, and its effect changed sign from one registry to
+  another.
+- **Taxonomic decay** (`matching_rule(decay = TRUE)`, the default since
+  0.3.0): the pairs without an inferred link take a probability from a
+  second model of the same form, by how close the registry comes to
+  them: the closest level at which relatives of the consumer have
+  recorded diets and the closest level at which the resource is related
+  to that diet, never lower for closer evidence, and the size of the web
+  (connectance usually falls as webs grow). In the cross-validation it
+  lowered the Brier score from 0.1988 to 0.1971 with Gray + GloBI and
+  from 0.223 to 0.209 with the Gray registry; on Tuesday Lake it
+  improved every score.
+- **Body masses** (`sample_metawebs(masses = )`): the probability of a
+  predation pair is lowered by how far the predator/prey mass ratio is
+  from the optimum, a within-consumer effect fitted to the 206 aquatic
+  webs of GATEWAy (`size_model`; a flat curve with its optimum at a
+  consumer about 17,000 times heavier than its prey), with weights for
+  the inferred links (0.25) and for the pairs of the decay (1). The
+  curve, its webs and the weights were chosen by the validation by folds
+  of the 12 validation webs with body masses: their mean Brier score
+  went down by 0.006 (9 of 12 webs better), and that of Tuesday Lake
+  from 0.140 to 0.137 with Gray + GloBI and from 0.149 to 0.139 with
+  Gray + GATEWAy. The masses can change from draw to draw (the draws of
+  a biomass model), so that each sampled web holds its links and the
+  masses of its taxa from the same draw.
 - **Sampling** (`sample_metawebs()`): in each draw the parameters come
   from the posterior and, by default, the effect of the system from its
   distribution (an unknown system); each link is kept with the
-  probability of its class. The same draw is used for every sample, so
-  contrasts between samples are computed within draws
-  (`contrast_indicators()`).
+  probability of its class, and each pair without a link with that of
+  its evidence, both shifted by the size term when the masses are given.
+  `link_probabilities()` gives the matrix of those probabilities,
+  averaged over the posterior and the effect of the system: a pair of
+  probability 0.25 is present in about one draw in four. The same draw
+  is used for every sample, so contrasts between samples are computed
+  within draws (`contrast_indicators()`).
 - **Independent test** (`score_metaweb()`, `tuesday_lake_taxa`): with
-  registries and calibrations without Tuesday Lake, the default inferred
-  71% of the links of the Tuesday Lake webs (22% with the Gray registry
-  alone, which has few diets of plankton), with a Brier skill of 0.10
-  over the null model (−0.01 with Gray alone). The ranking of the
+  registries and calibrations without Tuesday Lake, the default rule
+  inferred 71% of the links of the Tuesday Lake webs (22% with the Gray
+  registry alone, which has few diets of plankton). The ranking of the
   combinations on Tuesday Lake agreed with the cross-validation
-  (Spearman 0.73). The webs sampled still have too many basal species
-  and too low a mean trophic level.
+  (Spearman 0.73). With the decay and the ordered classes, the Brier
+  skill over the null model was 0.19 with Gray + GloBI (0.13 with Gray
+  alone, 0.16 with Gray + GATEWAy), and among taxa the sampled webs came
+  close to the observed ones in connectance, mean trophic level and
+  proportion of top taxa; with the body masses of Tuesday Lake as well,
+  0.20 (0.14 with Gray, 0.21 with Gray + GATEWAy).
 - **Indicators** (`web_indicators()`): on the web without cannibalism
   and without isolated nodes, aggregated into trophic species.
 
@@ -179,7 +256,7 @@ vignette (`vignette("bwebs")`) and the help pages.
 
 ## Status
 
-Version 0.2.0, experimental and not on CRAN.
+Version 0.3.0, experimental and not on CRAN.
 
 - The metaweb engine and the indicators reproduce exactly the code of
   the original analysis (1319 links of a 108-node metaweb; 27 indicators
@@ -195,14 +272,36 @@ Version 0.2.0, experimental and not on CRAN.
 - The GloBI download used for the comparison of sources and for
   `gray2015_globi_calibration` (832,003 records, 3 November 2026) is not
   included; `dev/globi/` has the scripts that download and process it,
-  and `dev/validation/` those of the comparisons (results in
+  `dev/gateway/` the one that turns GATEWAy into a registry, and
+  `dev/validation/` those of the comparisons (results in
   `dev/validation/results.md`).
 
 ## Known limitations
 
-- Links that are not inferred are not modelled (their probability is 0):
-  the sampled webs can only lose links of the metaweb. On Tuesday Lake
-  they had too many basal species and too low a mean trophic level.
+- Without body masses the taxonomic decay knows nothing of size: for
+  consumers whose relatives have few records it spreads probability over
+  pairs that size would exclude (rotifers eating fish), so in the
+  sampled webs of Tuesday Lake most consumers were omnivores (in 1984,
+  0.95 of the trophic species with Gray + GATEWAy and 0.84 with Gray +
+  GloBI, against 0.50 observed; 0.86 and 0.69 with the body masses), and
+  the links it adds among consumers form loops that raise the mean
+  trophic level (in the example above, which has no masses, from 2.0
+  without the decay to 2.7, with 2.5% of the sampled webs above 5.1). It
+  over-predicts the links among the pairs not inferred of the validation
+  webs (in the cross-validation, 846 expected against 477 recorded with
+  Gray + GloBI, 1,601 against 1,421 with Gray + GATEWAy), and its draws
+  vary a lot in their number of links when the system effect is drawn
+  (`sample_metawebs(system = "random")`). `matching_rule(decay = FALSE)`
+  gives the webs of version 0.2.0.
+- The size term was validated on the 12 validation webs with body masses
+  (streams and ponds) and on Tuesday Lake. Most of the pairs of its
+  curve come from marine webs (474,717 of 491,829), and it makes the
+  score of the webs whose recorded links are mostly predation worse
+  (Broadstone Stream, Skipwith Pond), which is why its weight on the
+  inferred links is small.
+- The indicators of trophic species of the observed and sampled webs are
+  not comparable: the observed webs collapse into few trophic species
+  (many producers share their consumers), the sampled ones do not.
 - The probabilities of the classes of evidence come from 13 validation
   webs, mostly of British rivers and streams, and transfer imperfectly
   to other systems: the generic class (“Algae” extended to all algae)
@@ -212,6 +311,16 @@ Version 0.2.0, experimental and not on CRAN.
   system; 46 and 49 (Woodward, Hildrew et al.) and 15 and 59 (P. H.
   Warren) may also describe the same systems
   (`validate_rule(groups = )`).
+- The links of GATEWAy were established in different ways (gut contents,
+  the literature, expert knowledge), and some of its webs have coarse
+  diets (in the Adirondack lakes of Havens 1992, 59% of the
+  predator-prey pairs are links): added to Gray + GloBI it made the
+  cross-validation worse. The five chalk streams of Gray et al. (2015)
+  and Thompson et al. (2017), built partly with WebBuilder from the Gray
+  registry, are left out of `gateway` but are in the GloBI download;
+  without them the cross-validation of Gray
+  - GloBI was worse, perhaps in part because they carry information of
+    the validation webs.
 - `gray2015_globi_calibration` was fitted with the GloBI records
   downloaded for the consumers of the validation webs, of Tuesday Lake
   and of the azoxystrobin experiment of Amador et al. (2024); a metaweb

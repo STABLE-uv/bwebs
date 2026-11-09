@@ -31,6 +31,25 @@ test_that("build_metaweb() infers the links derived by hand for the tiny registr
   expect_identical(mw$adjacency["simu", "gerr"], 1L)
 })
 
+test_that("each link keeps the amount of evidence that supports it", {
+  nodes <- prepare_nodes(example_taxa)
+  mw <- build_metaweb(nodes, gray2015)
+  e <- mw$edges[mw$edges$support != "manual", ]
+  expect_true(all(e$n_sources <= e$n_records))
+  expect_true(all(e$n_consumer_taxa >= 1L & e$n_consumer_taxa <= e$n_consumer_known))
+  expect_true(all(e$n_resource_taxa >= 1L & e$n_resource_taxa <= e$n_resource_known))
+  expect_true(all(e$n_consumer_taxa <= e$n_records & e$n_resource_taxa <= e$n_records))
+  # the relatives with records are a property of each node
+  known <- tapply(e$n_consumer_known, e$consumer, function(v) length(unique(v)))
+  expect_true(all(known == 1L))
+  tiny <- build_metaweb(prepare_nodes(tiny_taxa(), rule = tiny_rule()), tiny_registry(),
+                        manual_links = data.frame(resource = "cocc", consumer = "asel",
+                                                  action = "add"))
+  m <- tiny$edges[tiny$edges$support == "manual", ]
+  expect_true(all(is.na(unlist(m[c("n_consumer_taxa", "n_resource_taxa", "n_consumer_known",
+                                   "n_resource_known")]))))
+})
+
 test_that("downward inheritance extends coarse records to the nodes of that taxon", {
   # Without climbing, simu has no records as a resource; the record
   # "Gerris eats Diptera" (resolved only to order) reaches it downwards.

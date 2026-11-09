@@ -1,3 +1,104 @@
+# bwebs 0.3.0
+
+## Changes that alter results
+
+* Taxonomic distance decay of the pairs without an inferred link
+  (`matching_rule(decay = TRUE)`, the default). Instead of probability 0,
+  each such pair takes the probability of its evidence: the closest level
+  (family, order, class, phylum or any consumer) at which relatives of the
+  consumer have recorded diets, and the closest level at which the resource
+  is related to those diets (within the family of a recorded resource,
+  order, class, phylum or not related), plus whether a record of a generic
+  group applies to it. Closer evidence never gives a lower probability.
+  `validate_rule()` returns the evidence of the pairs not inferred of each
+  validation web (`decay`); `calibrate_links()` fits a second hierarchical
+  model to them, with its own web effect (`decay`); `build_metaweb()` lists
+  the pairs without a link with their evidence (`decay`);
+  `sample_metawebs()` draws them in every draw (`background`), and
+  `calc_indicators()`, `score_rule()` and `score_metaweb()` include them.
+  `decay = FALSE` gives the results of 0.2.0. The decay model includes the
+  size of the web (log of its number of nodes): with Gray + GloBI, fewer of
+  the pairs not inferred are links in larger webs. In the cross-validation
+  of the default rule with Gray + GloBI, the Brier score went from 0.1988
+  without the decay to 0.1983 with it and to 0.1971 with the size of the
+  web; with the Gray et al. (2015) registry alone, from 0.223 to 0.208 and
+  0.209.
+* Body masses (`sample_metawebs(masses = )`, `score_metaweb(masses = )`): the
+  probability of every predation pair (an animal resource) whose two nodes
+  have a mass is lowered by how far the predator/prey mass ratio is from the
+  optimum of `size_model`, a within-consumer effect fitted to the 206
+  aquatic webs of GATEWAy (Brose et al. 2019; Tuesday Lake left out), with
+  one weight for the links inferred by the rule and another for the pairs
+  of the taxonomic decay. The masses can be one per node or one set per draw
+  (the draws of a biomass model): each draw uses its own masses and keeps
+  them (`masses` of the result), so that a draw holds the links of a web and
+  the masses of its nodes. The curve and the weights (0.25 for the inferred
+  links and 1 for the pairs of the decay) are those that gave the best
+  validation by folds of the 12 validation webs with body masses, left out
+  by system, among curves fitted to the webs of Brose et al. (2005) and
+  cheddar or to those of GATEWAy, one curve or one per kind of predator:
+  their mean Brier score went down by 0.006 (9 of 12 webs better; 0.008 with
+  the Gray registry, 0.005 with Gray + GloBI, 0.006 with Gray + GATEWAy), and
+  that of Tuesday Lake from 0.140 to 0.137 with Gray + GloBI and from 0.149
+  to 0.139 with Gray + GATEWAy. Without `masses` nothing changes.
+* GATEWAy (Brose et al. 2019, CC BY 4.0) as a registry: `gateway`, the
+  19,185 links of its 81 freshwater webs (lakes and streams, without
+  Tuesday Lake), classified with the taxonomy of the other registries or of
+  the GBIF backbone, and `gray2015_gateway_calibration`, the calibration of
+  `combine_registries(gray2015, gateway)`. In the cross-validation it
+  improved the Gray registry (Brier 0.2093 to 0.2052, 7 of 12 webs better)
+  but not Gray + GloBI (0.1971 to 0.2013), which stays the best combination;
+  being distributable, Gray + GATEWAy is the registry of the examples.
+* Ordered classes of evidence (`calibrate_links(monotone = TRUE)`, the
+  default; also in `score_rule()`): a link supported by a closer relative
+  (the taxon itself, its genus, subfamily, family, order, class) is never
+  less probable than one supported by a more distant relative; `generic`
+  is free. The free coefficients of 0.2.0 (`monotone = FALSE`) broke that
+  order: links of the same genus were more probable than those of the same
+  taxon, links that needed a class more than those that needed an order,
+  and with Gray + GloBI links that needed an order (0.51) more than those
+  of the same family (0.30). In the cross-validation of the 12 webs the
+  ordered classes scored the same (Brier score with the decay 0.2104
+  against 0.2093 with Gray, 0.1978 against 0.1971 with Gray + GloBI and
+  0.2044 against 0.2052 with Gray + GATEWAy; standard errors of the
+  differences 0.003 to 0.005); on Tuesday Lake they did better with Gray +
+  GloBI and Gray + GATEWAy and worse with the Gray registry alone. With
+  Gray + GATEWAy (`gray2015_gateway_calibration`) the probability in a new
+  system is 0.51 for the taxon and its genus, 0.38 for the subfamily and
+  the family, and 0.31 for the order and the class.
+* The bundled calibrations `gray2015_calibration`,
+  `gray2015_globi_calibration` and `gray2015_gateway_calibration` have the
+  ordered classes and the decay model (with the size of the web).
+
+## New features
+
+* `link_probabilities()`: the matrix of the probability of every resource →
+  consumer pair of a metaweb, from which `sample_metawebs()` draws its webs
+  (the inferred links by their class of evidence, the other pairs by the
+  taxonomic decay and, with `masses`, the size term), averaged over the
+  posterior and over the effect of the system.
+* The amount of evidence of each link: `build_metaweb()` keeps, besides its
+  records and studies, the consumer and resource taxa among them
+  (`n_consumer_taxa`, `n_resource_taxa`: how many relatives of the consumer
+  eat the resource or its relatives, and how many relatives of the
+  resource are eaten) and the relatives of each node with records in the
+  network (`n_consumer_known`, `n_resource_known`); `validate_rule()`
+  returns them for every link inferred in each validation web (`links`).
+  None of these amounts, nor the shares of the relatives that support a
+  link, improved the prediction of the links of the webs left out in the
+  cross-validation of the default rule with Gray, Gray + GloBI or Gray +
+  GATEWAy (their effects changed sign from one registry to another), so the
+  probability of a link still depends on its class only.
+
+## Other changes
+
+* Logo, shown in the README (with a version for dark backgrounds).
+* `score_rule()` and `score_metaweb()` report the recorded links that the
+  rule missed (`n_missed`) and the links expected among the pairs without a
+  link (`expected_background`).
+* Data: `size_model`, the effect of the predator/prey body-mass ratio
+  (coefficients only); `gateway` and `gray2015_gateway_calibration`.
+
 # bwebs 0.2.0
 
 ## Changes that alter results

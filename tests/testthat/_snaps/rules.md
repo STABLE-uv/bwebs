@@ -9,6 +9,7 @@
         registries: all, at every level
         downward inheritance: subfamily, family, order (roles: resource)
         generic resource groups: 5; exceptions: 1; manual-diet nodes: 0
+        pairs not inferred: probability from the taxonomic distance decay
 
 ---
 
@@ -21,4 +22,5 @@
         primary registry: gray2015; other registries up to family
         downward inheritance: subfamily, family, order (roles: resource)
         generic resource groups: 5; exceptions: 1; manual-diet nodes: 0
+        pairs not inferred: probability from the taxonomic distance decay
 

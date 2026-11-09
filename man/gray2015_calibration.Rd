@@ -14,10 +14,12 @@ An object of class \code{bwebs_calibration} (see \code{\link[=calibrate_links]{c
 gray2015_calibration
 }
 \description{
-The Bayesian calibration (\code{\link[=calibrate_links]{calibrate_links()}}, 4 chains of 4000 draws) of
-\link{gray2015} with the default \code{\link[=matching_rule]{matching_rule()}} and the 13 validation webs
-marked in \link{gray2015_sources}; Tuesday Lake (study 12) was kept apart only
-while the rule was chosen and tested (\link{gray2015_rule_comparison}).
+The Bayesian calibration (\code{\link[=calibrate_links]{calibrate_links()}}, 4 chains of 4000 draws,
+ordered classes of evidence) of \link{gray2015} with the default
+\code{\link[=matching_rule]{matching_rule()}}, including the model of the taxonomic decay of the
+pairs not inferred (\code{decay}), and the 13 validation
+webs marked in \link{gray2015_sources}; Tuesday Lake (study 12) was kept apart
+only while the rule was chosen and tested (\link{gray2015_rule_comparison}).
 Studies 13 and 50 are left out together (\code{groups}): 62\% of the links of
 study 13 are also recorded in study 50 (see \code{\link[=shared_studies]{shared_studies()}}), so they
 describe the same system, and when each was left out alone the other

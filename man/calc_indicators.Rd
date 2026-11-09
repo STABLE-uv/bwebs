@@ -63,9 +63,10 @@ community with zero rows gives zero rows.
 \description{
 \code{calc_indicators()} builds the local food web of every sample of a
 community table (the nodes present in the sample plus the permanent
-resources) from each draw of \code{\link[=sample_metawebs]{sample_metawebs()}}, or from the
-deterministic metaweb of \code{\link[=build_metaweb]{build_metaweb()}}, and computes its indicators
-with \code{\link[=web_indicators]{web_indicators()}}.
+resources) from each draw of \code{\link[=sample_metawebs]{sample_metawebs()}} (its inferred links and,
+with the taxonomic decay, the pairs without a link drawn in that draw), or
+from the deterministic metaweb of \code{\link[=build_metaweb]{build_metaweb()}} (inferred links only),
+and computes its indicators with \code{\link[=web_indicators]{web_indicators()}}.
 }
 \section{Missing values and zeros}{
 
@@ -84,8 +85,8 @@ presence).
 
 \examples{
 nodes <- prepare_nodes(example_taxa)
-mw <- build_metaweb(nodes, gray2015)
-draws <- sample_metawebs(mw, gray2015_calibration, n_draws = 5, seed = 1)
+mw <- build_metaweb(nodes, combine_registries(gray2015, gateway))
+draws <- sample_metawebs(mw, gray2015_gateway_calibration, n_draws = 5, seed = 1)
 ind <- calc_indicators(draws, example_community, permanent = c("cpom", "fpom"))
 head(ind$values[, c("draw", "sample_id", "S", "L", "C", "TL_mean")])
 }

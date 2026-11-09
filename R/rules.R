@@ -19,7 +19,10 @@
 #' at least five other nodes, using the records of every registry at every
 #' level. The rule of the reanalysis of Amador et al. (2024) that this package
 #' was written from is the same with `min_partners = 1`, whose score was
-#' indistinguishable. The ladder of taxonomic
+#' indistinguishable. The taxonomic decay of the pairs not inferred
+#' (`decay`), added afterwards, lowered the cross-validated Brier score of
+#' the default rule with the Gray registry, left it unchanged with Gray +
+#' GloBI and improved the scores on Tuesday Lake. The ladder of taxonomic
 #' generalisation follows the WebBuilder method of Gray et al. (2015); the
 #' climbing rule, the evidence threshold, the downward inheritance and the
 #' generic resource groups are extensions of that method (see Details).
@@ -67,6 +70,14 @@
 #' @param max_iter Maximum number of passes used to stabilise the levels
 #'   (the number of partners of a node depends on the levels of its
 #'   partners).
+#' @param decay If `TRUE` (default), the resource → consumer pairs that the
+#'   rule does not infer get a probability from the taxonomic distance decay
+#'   instead of 0 (see Details): the closer the recorded diets of the
+#'   relatives of the consumer come to the resource, the more probable the
+#'   link. The decay is fitted by [calibrate_links()] and used by
+#'   [sample_metawebs()], [score_rule()] and [score_metaweb()]; the
+#'   deterministic metaweb of [build_metaweb()] keeps only the inferred
+#'   links. `FALSE` gives those pairs probability 0, as in WebBuilder.
 #'
 #' @return An object of class `bwebs_rule`: a named list with the arguments
 #'   above, validated.
@@ -93,6 +104,18 @@
 #' level reaches the threshold, the finest level with at least one partner is
 #' used, and failing that the finest level with at least one record.
 #'
+#' Taxonomic distance decay (`decay = TRUE`). For a pair without an inferred
+#' link, the consumer is resolved at the closest level, from its family on
+#' (its order, class, phylum, or any consumer), whose consumers have at
+#' least one resource recorded in the registry (records of the consumer
+#' itself, its genus or its subfamily count at the family), and the resource
+#' at the closest level (its own taxon, genus, subfamily, family, order,
+#' class, phylum or none) at which it is related to a resource of those
+#' records; a record of a generic group that applies to the resource also
+#' counts. The probability of the pair decreases with both levels and is
+#' never 0 (see [calibrate_links()]). Cannibalism, the pairs removed by
+#' manual links and the diets of basal and `manual_diet` nodes stay at 0.
+#'
 #' @references
 #' Gray C, Figueroa DH, Hudson LN, Ma A, Perkins D, Woodward G (2015).
 #' Joining the dots: an automated method for constructing food webs from
@@ -111,7 +134,7 @@ matching_rule <- function(base_level = "family", climb_max = "class", mode = "cl
                           downward_roles = "resource",
                           generic_groups = default_generic_groups(),
                           exceptions = default_exceptions(),
-                          manual_diet = character(0), max_iter = 5L) {
+                          manual_diet = character(0), max_iter = 5L, decay = TRUE) {
   check_choice(base_level, match_levels)
   check_choice(climb_max, match_levels)
   check_choice(mode, c("climb", "fixed", "ladder"))
@@ -142,6 +165,7 @@ matching_rule <- function(base_level = "family", climb_max = "class", mode = "cl
     abort_input("`manual_diet` must be a character vector of node identifiers.")
   }
   check_number(max_iter, lower = 1)
+  check_flag(decay)
   rule <- list(
     base_level = base_level, climb_max = climb_max, mode = mode,
     min_partners = as.integer(min_partners), climb_predators = climb_predators,
@@ -149,7 +173,7 @@ matching_rule <- function(base_level = "family", climb_max = "class", mode = "cl
     supplementary_max_level = supplementary_max_level,
     downward_ranks = downward_ranks, downward_roles = downward_roles,
     generic_groups = generic_groups, exceptions = exceptions,
-    manual_diet = manual_diet, max_iter = as.integer(max_iter)
+    manual_diet = manual_diet, max_iter = as.integer(max_iter), decay = decay
   )
   structure(rule, class = "bwebs_rule")
 }
@@ -172,6 +196,9 @@ print.bwebs_rule <- function(x, ...) {
               paste(x$downward_roles, collapse = ", ")))
   cat(sprintf("  generic resource groups: %d; exceptions: %d; manual-diet nodes: %d\n",
               nrow(x$generic_groups), nrow(x$exceptions), length(x$manual_diet)))
+  cat(sprintf("  pairs not inferred: %s\n",
+              if (isTRUE(x$decay)) "probability from the taxonomic distance decay" else
+                "probability 0"))
   invisible(x)
 }
 

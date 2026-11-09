@@ -45,10 +45,12 @@
 
 #' Calibration of link probabilities for the Gray et al. (2015) registry
 #'
-#' The Bayesian calibration ([calibrate_links()], 4 chains of 4000 draws) of
-#' [gray2015] with the default [matching_rule()] and the 13 validation webs
-#' marked in [gray2015_sources]; Tuesday Lake (study 12) was kept apart only
-#' while the rule was chosen and tested ([gray2015_rule_comparison]).
+#' The Bayesian calibration ([calibrate_links()], 4 chains of 4000 draws,
+#' ordered classes of evidence) of [gray2015] with the default
+#' [matching_rule()], including the model of the taxonomic decay of the
+#' pairs not inferred (`decay`), and the 13 validation
+#' webs marked in [gray2015_sources]; Tuesday Lake (study 12) was kept apart
+#' only while the rule was chosen and tested ([gray2015_rule_comparison]).
 #' Studies 13 and 50 are left out together (`groups`): 62% of the links of
 #' study 13 are also recorded in study 50 (see [shared_studies()]), so they
 #' describe the same system, and when each was left out alone the other
@@ -62,10 +64,12 @@
 
 #' Calibration of link probabilities for Gray et al. (2015) and GloBI
 #'
-#' The Bayesian calibration ([calibrate_links()], 4 chains of 4000 draws) of
-#' [gray2015] combined with records of Global Biotic Interactions (GloBI),
-#' with the default [matching_rule()] (every registry at every level) and the
-#' 13 validation webs marked in [gray2015_sources]. Studies 13 and 50 are left
+#' The Bayesian calibration ([calibrate_links()], 4 chains of 4000 draws,
+#' ordered classes of evidence) of [gray2015] combined with records of
+#' Global Biotic Interactions (GloBI),
+#' with the default [matching_rule()] (every registry at every level, with
+#' the taxonomic decay of the pairs not inferred) and the 13 validation webs
+#' marked in [gray2015_sources]. Studies 13 and 50 are left
 #' out together, and when each web is rebuilt the GloBI studies holding at
 #' least 10% of its links are left out too (copies of the web in other
 #' compilations; for Tuesday Lake, study 12, also the GloBI studies that copy
@@ -77,8 +81,9 @@
 #' The GloBI records were downloaded on 3 November 2026 for the consumers of
 #' the validation webs, of Tuesday Lake and of the azoxystrobin experiment of
 #' Amador et al. (2024); they are not included in the package (their licences
-#' depend on each source). Only the counts of the validation and the
-#' posterior draws are.
+#' depend on each source). Only the counts of the validation (by class of
+#' evidence, and by evidence profile for the decay) and the posterior draws
+#' are.
 #'
 #' @format An object of class `bwebs_calibration` (see [calibrate_links()]).
 #' @source `data-raw/gray2015_globi_calibration.R`.
@@ -238,3 +243,110 @@ NULL
 #' @source `data-raw/source_comparison.R`, from
 #'   `dev/validation/compare_sources.R` (Bayesian refits with seed 2026).
 "source_comparison"
+
+#' Effect of the predator/prey body-mass ratio on links
+#'
+#' The size term of [sample_metawebs()] and [score_metaweb()] with
+#' `masses`: the within-consumer effect of \eqn{x = \log_{10}(M_{consumer} /
+#' M_{resource})}{x = log10(M_consumer / M_resource)} on the links of each
+#' predator with the animals of its web, a logistic regression with one
+#' intercept per consumer and a quadratic term in \eqn{x}, fitted to the 206
+#' aquatic webs of GATEWAy version 1.0 (Brose et al. 2019; 49 lakes, 23
+#' streams and 134 marine webs; 491,829 predator x animal pairs with 47,467
+#' links). Tuesday Lake was left out, so that it stays an independent test,
+#' and so were the five chalk streams of Gray et al. (2015) and Thompson et
+#' al. (2017), whose links were partly extrapolated from similar taxa. Only
+#' the coefficients are bundled.
+#'
+#' The shift of the logit of a predation pair is \eqn{w\, b\, (x -
+#' x^*)^2}{w b (x - x*)^2}, 0 at the optimum ratio \eqn{x^*} (a consumer
+#' about 17,000 times heavier than its prey; the curve is flat: \eqn{b\, (x -
+#' x^*)^2}{b (x - x*)^2} is -0.24 for a ratio 100 times smaller or larger than
+#' the optimum, and -1.1 for a consumer as heavy as its prey), with weight
+#' \eqn{w} = 0.25 for the links inferred by the rule and 1 for the pairs of
+#' the taxonomic decay. The curve and the weights are those that maximised the
+#' validation by folds: the 12 validation webs of the registry with body
+#' masses for at least 60% of their consumers, left out by system, with the
+#' probabilities and the curve fitted to the other systems, against curves
+#' fitted to the webs of Brose et al. (2005) and cheddar, to the freshwater
+#' webs of GATEWAy or to all of its webs, one curve or one per kind of
+#' predator, and weights from 0 to 1 and from 1 to 30. The mean Brier score
+#' of those webs went down by 0.006 (9 of 12 webs better; 0.008 with the
+#' Gray registry, 0.005 with Gray + GloBI and 0.006 with Gray + GATEWAy), and
+#' that of Tuesday Lake from 0.140 to 0.137 with Gray + GloBI and from 0.149
+#' to 0.139 with Gray + GATEWAy. The weight of the inferred links was
+#' limited to 0.25: larger weights gave about the same mean score but did
+#' worse on a web when they were chosen without it, because in webs whose
+#' recorded links are mostly predation (Broadstone Stream, Skipwith Pond)
+#' the size term lowers many recorded links (`dev/validation/results.md` in
+#' the GitHub repository of the package). Change `weights` to use other
+#' weights.
+#'
+#' @format An object of class `bwebs_size_model`, a list with
+#'   `coefficients` (`x`, `x2`: the linear and quadratic terms in \eqn{x}),
+#'   `std_error`, `optimum` (\eqn{x^*}), `weights` (`rule`, `decay`),
+#'   `data` (webs, pairs and links by ecosystem) and `sources`.
+#' @source Brose U, et al. (2019) Predator traits determine food-web
+#'   architecture across ecosystems. *Nature Ecology & Evolution* 3:
+#'   919--927, \doi{10.1038/s41559-019-0899-x}. GlobAL daTabasE of traits and
+#'   food Web Architecture (GATEWAy) version 1.0, iDiv Data Repository,
+#'   dataset 283 (CC BY 4.0). Fitted by `data-raw/size_model.R`.
+"size_model"
+
+#' Registry of the freshwater trophic links of GATEWAy
+#'
+#' The links of the 81 freshwater food webs (lakes and streams) of the
+#' GlobAL daTabasE of traits and food Web Architecture (GATEWAy) version 1.0
+#' (Brose et al. 2019) in the format of [as_registry()]: 19,185 records,
+#' one study per food web (`study_id` `"gateway: <food web>"`). Left out:
+#' Tuesday Lake (the independent test of the package), the five chalk
+#' streams of Gray et al. (2015) and Thompson et al. (2017), whose links were
+#' partly extrapolated from similar taxa with WebBuilder, and parasitic and
+#' parasitoid links. GATEWAy gives only the names of the taxa: their genus,
+#' subfamily, family, order and class are those of the same names in
+#' [gray2015] and in the GloBI records of [gray2015_globi_calibration] (by
+#' name, then by genus or higher rank), or of the GBIF backbone for the rest
+#' (98.6% of the consumers and 92% of the resources resolved to a class; the
+#' rest are mostly detritus, groups such as "Phytoplankton" and the local
+#' names of the fish of Lake Malawi). Combine it with [gray2015] with
+#' [combine_registries()], as [gray2015_gateway_calibration] does.
+#'
+#' Several webs of GATEWAy copy validation webs of [gray2015_sources]
+#' (Broadstone Stream, Mill Stream, Skipwith Pond, the Icelandic streams and
+#' the streams of Layer et al. 2010): when such a web is validated, leave
+#' them out with it (`exclusions` of [validate_rule()];
+#' `dev/gateway/gateway_exclusions.csv` in the GitHub repository of the
+#' package, made by `dev/gateway/process_gateway.R`).
+#'
+#' @format A data frame with 19,185 rows and the 23 columns of [gray2015]
+#'   (`registry` `"gateway"`); `evidence` gives how the link was established
+#'   in GATEWAy and `citation` its original source.
+#' @source Brose U, et al. (2019) Predator traits determine food-web
+#'   architecture across ecosystems. *Nature Ecology & Evolution* 3:
+#'   919--927, \doi{10.1038/s41559-019-0899-x}. GlobAL daTabasE of traits and
+#'   food Web Architecture (GATEWAy) version 1.0, iDiv Data Repository,
+#'   dataset 283, file `283_2_FoodWebDataBase_2018_12_10.csv`, licence CC BY
+#'   4.0. See `data-raw/gateway.R`.
+"gateway"
+
+#' Calibration of link probabilities for Gray et al. (2015) and GATEWAy
+#'
+#' The Bayesian calibration ([calibrate_links()], 4 chains of 4000 draws,
+#' ordered classes of evidence) of [gray2015] combined with [gateway], with
+#' the default [matching_rule()]
+#' (every registry at every level, with the taxonomic decay of the pairs not
+#' inferred) and the 13 validation webs marked in [gray2015_sources].
+#' Studies 13 and 50 are left out together, and when each web is rebuilt the
+#' webs of GATEWAy that copy it are left out too (those holding at least 10%
+#' of its links, alone or pooled by publication). In the cross-validation of
+#' the 12 webs other than Tuesday Lake, Gray + GATEWAy had a Brier score of
+#' 0.2052, against 0.2093 with the Gray registry alone and 0.1971 with Gray
+#' + GloBI (free classes of evidence; GloBI cannot be bundled; adding
+#' GATEWAy to Gray + GloBI gave 0.2013), and with the ordered classes of
+#' this calibration 0.2044, against 0.2104 and 0.1978. Use it with
+#' [sample_metawebs()] or [link_probabilities()] for metawebs built with the
+#' same rule from `combine_registries(gray2015, gateway)`.
+#'
+#' @format An object of class `bwebs_calibration` (see [calibrate_links()]).
+#' @source `data-raw/gray2015_gateway_calibration.R`.
+"gray2015_gateway_calibration"

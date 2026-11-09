@@ -27,13 +27,27 @@ downward inheritance; \code{"manual"}), \code{registries}, \code{n_records} and
 \code{res_level} and \code{con_level} (levels at which resource and consumer were
 resolved), \code{evidence} (types of evidence of the records), \code{source_ids}
 (up to 20 studies), \code{examples} (up to 5 records), \code{citations} (up to 3),
-\code{cannibal} (logical), \code{evidence_class} (see Details) and \code{extrapolated}
-(logical);
+\code{evidence_class} (see Details), the amount of evidence of the link
+(\code{n_consumer_taxa} and \code{n_resource_taxa}: distinct consumer and resource
+taxa among its records, that is the consumer and its relatives that eat
+the resource or its relatives, and those relatives of the resource;
+\code{n_consumer_known}: distinct consumer taxa among the records of the
+consumer node whose resource is a node of the network, its relatives
+with a recorded diet in the network at the level at which it was
+resolved; \code{n_resource_known}: distinct resource taxa among the records
+of the resource node whose consumer is a node of the network),
+\code{cannibal} (logical) and \code{extrapolated} (logical);
 \item \code{nodes}: the nodes with the levels used in each role
 (\code{resource_level_used}, \code{consumer_level_used}) and whether the evidence
 threshold was met;
 \item \code{adjacency}: an integer matrix resource (rows) x consumer (columns)
 with 1 for a link;
+\item \code{decay} (with \code{decay = TRUE} in the rule, otherwise \code{NULL}): the pairs
+without a link that \code{\link[=sample_metawebs]{sample_metawebs()}} draws with a probability from
+the taxonomic decay, with their evidence (\code{consumer_level},
+\code{resource_level}, \code{generic}; see \code{\link[=matching_rule]{matching_rule()}}): every pair whose
+consumer is a consumer node without a manual diet, except cannibalism,
+the links and the pairs removed by \code{manual_links};
 \item \code{settings}: the rule and the registries used;
 \item \code{diagnostics}: nodes left without links (\code{unlinked}), and whether the
 levels converged.
@@ -65,9 +79,11 @@ treated as \code{"class"} by \code{\link[=sample_metawebs]{sample_metawebs()}}. 
 }
 \section{Missing values and zeros}{
 
-A pair of nodes without any matching record has no link: as in WebBuilder,
-absence of a record is treated as absence of the link. \code{\link[=calibrate_links]{calibrate_links()}}
-explains why the probability of such pairs is not modelled.
+A pair of nodes without any matching record has no link in the metaweb:
+as in WebBuilder, absence of a record is treated as absence of the link.
+With \code{decay = TRUE} in the rule, \code{\link[=sample_metawebs]{sample_metawebs()}} still draws such
+pairs with a small probability that depends on how close the records of
+the relatives of the consumer come to the resource (\code{decay}).
 }
 
 \section{Assumptions}{
@@ -78,7 +94,7 @@ the node classification.
 
 \examples{
 nodes <- prepare_nodes(example_taxa)
-mw <- build_metaweb(nodes, gray2015)
+mw <- build_metaweb(nodes, combine_registries(gray2015, gateway))
 mw
 head(mw$edges[, c("resource", "consumer", "support", "evidence_class")])
 }

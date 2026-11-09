@@ -6,15 +6,16 @@
 # (dev/globi/download_globi.R, 832,003 records downloaded on 2026-11-03,
 # processed by dev/globi/process_globi.R). The GloBI records are not bundled
 # (their licences depend on each source); only the counts of the validation
-# and the posterior draws are.
+# (by class and by evidence profile of the decay) and the posterior draws are.
 #
 # All 13 validation webs, 13 and 50 left out together; when each web is
 # rebuilt, the GloBI studies holding at least 10% of its links are left out
 # too (copies of the web in other compilations), and for Tuesday Lake (study
 # 12) also the GloBI studies that copy it (dev/globi/globi_tuesday_lake.csv).
-# Rule: matching_rule() with its defaults (GloBI used at every level). Bayesian
-# fit, 4 chains x 4000 draws, seed 2026. Takes about 15 minutes. Packages used
-# only here: pkgload, usethis.
+# Rule: matching_rule() with its defaults (GloBI used at every level, with the
+# taxonomic decay of the pairs not inferred). Bayesian fit, 4 chains x 4000
+# draws, seed 2026 (the decay model keeps 4000 draws). Takes about 25
+# minutes. Packages used only here: pkgload, usethis.
 #
 # Run from the package root after dev/globi/process_globi.R:
 #   Rscript data-raw/gray2015_globi_calibration.R <path>/globi_registry.rds

@@ -15,6 +15,8 @@
 # primary_registry = NULL), which is added to the result:
 #   Rscript dev/validation/source_sensitivity.R <globi_registry.rds> default
 pkgload::load_all(".", quiet = TRUE)
+# Without the taxonomic decay (decay = FALSE), as when these results were
+# computed (before version 0.3.0).
 args <- commandArgs(trailingOnly = TRUE)
 g <- readRDS(args[1])
 out_dir <- file.path("dev", "validation")
@@ -43,8 +45,9 @@ if (length(args) > 1L && args[2] == "default") {
   ex <- sh[sh$study_id %in% globi_primary$study_id, c("web", "study_id")]
   t0 <- Sys.time()
   cmp <- compare_rules(both, sources = src, groups = groups,
-                       rules = stats::setNames(list(matching_rule()), rule_label(matching_rule())),
-                       exclusions = ex, seed = 2026, quiet = TRUE)
+                       rules = stats::setNames(list(matching_rule(decay = FALSE)),
+                                               rule_label(matching_rule())),
+                       exclusions = ex, monotone = FALSE, seed = 2026, quiet = TRUE)
   message("both_all without compilations: ", format(Sys.time() - t0))
   old <- readRDS(file.path(out_dir, "source_sensitivity.rds"))
   row <- cbind(analysis = "both_all_no_compilations",
@@ -59,10 +62,12 @@ if (length(args) > 1L && args[2] == "default") {
 
 rules <- c("climb/family/class/1", "climb/family/class/5")
 configs <- list(
-  globi = list(rules = candidate_rules(primary_registry = "globi")[rules], train = "globi"),
-  both_family = list(rules = candidate_rules(primary_registry = "gray2015")[rules], train = NULL),
+  globi = list(rules = candidate_rules(primary_registry = "globi", decay = FALSE)[rules],
+               train = "globi"),
+  both_family = list(rules = candidate_rules(primary_registry = "gray2015", decay = FALSE)[rules],
+                     train = NULL),
   both_class = list(rules = candidate_rules(primary_registry = "gray2015",
-                                            supplementary_max_level = "class")[rules],
+                                            supplementary_max_level = "class", decay = FALSE)[rules],
                     train = NULL)
 )
 res <- list()
@@ -74,7 +79,8 @@ for (s in names(configs)) {
   t0 <- Sys.time()
   res[[paste0(s, "_no_compilations")]] <- compare_rules(
     both, sources = src, groups = groups, rules = configs[[s]]$rules,
-    train_registries = configs[[s]]$train, exclusions = ex, seed = 2026, quiet = TRUE)
+    train_registries = configs[[s]]$train, exclusions = ex, monotone = FALSE, seed = 2026,
+    quiet = TRUE)
   message(s, " without compilations: ", format(Sys.time() - t0))
 }
 # 2. Exclusion threshold of 0.05 (whole GloBI registry)
@@ -85,7 +91,8 @@ for (s in c("globi", "both_family")) {
   t0 <- Sys.time()
   res[[paste0(s, "_threshold_0.05")]] <- compare_rules(
     both, sources = src, groups = groups, rules = configs[[s]]$rules,
-    train_registries = configs[[s]]$train, exclusions = ex05, seed = 2026, quiet = TRUE)
+    train_registries = configs[[s]]$train, exclusions = ex05, monotone = FALSE,
+    seed = 2026, quiet = TRUE)
   message(s, " threshold 0.05: ", format(Sys.time() - t0))
 }
 tab <- do.call(rbind, lapply(names(res), function(k) {

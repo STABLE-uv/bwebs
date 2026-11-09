@@ -9,7 +9,9 @@ score_metaweb(
   calibration,
   observed,
   nodes = NULL,
-  uncalibrated = "exclude"
+  uncalibrated = "exclude",
+  masses = NULL,
+  size_model = NULL
 )
 }
 \arguments{
@@ -27,14 +29,23 @@ metaweb), for example the taxa present in one sample.}
 
 \item{uncalibrated}{Probability of links without a calibrated probability
 (see \code{\link[=sample_metawebs]{sample_metawebs()}}): \code{"exclude"} (default, 0) or \code{"keep"} (1).}
+
+\item{masses}{\code{NULL} (default, no size term) or the body masses of the
+nodes, a vector named by \code{node_id} (see \code{\link[=sample_metawebs]{sample_metawebs()}}).}
+
+\item{size_model}{The effect of the predator/prey mass ratio used with
+\code{masses}; \code{NULL} (default) uses \link{size_model}.}
 }
 \value{
 An object of class \code{bwebs_web_score}, a list with \code{summary} (one
 row: pairs evaluated, observed, predicted and predicted-and-observed
-links, \code{brier}, \code{p_reference}, \code{brier_reference}, \code{skill}, \code{tss},
-\code{precision}, \code{recall}) and \code{pairs} (every pair that was inferred or
-observed, with its class, probability \code{p} and whether it was
-\code{observed}).
+links, \code{n_missed} (observed links not inferred), \code{expected_background}
+(links expected among the pairs without a link; 0 without the decay),
+\code{brier}, \code{p_reference}, \code{brier_reference}, \code{skill}, \code{tss}, \code{precision},
+\code{recall}) and \code{pairs} (every pair that was inferred or observed and,
+with the decay, every pair evaluated, with its class, \code{source} of its
+probability (\code{"rule"}, \code{"decay"} or \code{"none"}), probability \code{p} and
+whether it was \code{observed}).
 }
 \description{
 \code{score_metaweb()} compares the links of a metaweb, with the probabilities
@@ -47,17 +58,24 @@ The pairs evaluated are the resource \eqn{\to} consumer pairs among
 \code{nodes} whose consumer has at least one observed prey among them, without
 cannibalism. Each inferred link takes the probability of its class in a
 new system (\code{p_new} of the calibration), manual links probability 1, and
-pairs without an inferred link probability 0. The scores are those of
-\code{\link[=score_rule]{score_rule()}}; the null model gives every pair the mean connectance of
-the validation webs of the calibration.
+pairs without an inferred link probability 0 or, with \code{decay = TRUE} in
+the rule, the probability of their evidence for the taxonomic decay in a
+new system (\code{p_new} of the decay model of the calibration, for a web of
+as many nodes as are evaluated). With
+\code{masses}, the logit of those probabilities is shifted by the size term of
+each predation pair, with the weights of \code{size_model} (see
+\code{\link[=sample_metawebs]{sample_metawebs()}}). The scores are those of \code{\link[=score_rule]{score_rule()}}; the null
+model gives every pair the mean connectance of the validation webs of the
+calibration.
 }
 \examples{
 nodes <- prepare_nodes(tuesday_lake_taxa)
-registry <- gray2015[gray2015$study_id != "12", ]   # study 12 is Tuesday Lake
+# study 12 of gray2015 is Tuesday Lake (gateway has no copy of it)
+registry <- combine_registries(gray2015[gray2015$study_id != "12", ], gateway)
 mw <- build_metaweb(nodes, registry)
 tl84 <- tuesday_lake_links[tuesday_lake_links$sample_id == "TL84", ]
 present <- tuesday_lake_community$node_id[tuesday_lake_community$sample_id == "TL84"]
-score_metaweb(mw, gray2015_calibration, tl84, nodes = present)
+score_metaweb(mw, gray2015_gateway_calibration, tl84, nodes = present)
 }
 \seealso{
 \code{\link[=score_rule]{score_rule()}}, \link{tuesday_lake_taxa} for an observed web.

@@ -36,3 +36,15 @@ Research 36, 1-84).
 
 The registry of Gray et al. (2015) (data/gray2015.rda) is distributed by its
 authors under CC0 1.0 (Zenodo, doi:10.5281/zenodo.13751).
+
+The registry data/gateway.rda is derived from the GlobAL daTabasE of traits
+and food Web Architecture (GATEWAy) version 1.0 (Brose U, et al. 2019,
+Predator traits determine food-web architecture across ecosystems, Nature
+Ecology & Evolution 3, 919-927; iDiv Data Repository, dataset 283),
+distributed under the Creative Commons Attribution 4.0 International licence
+(CC BY 4.0, https://creativecommons.org/licenses/by/4.0/). Changes: only the
+links of lakes and streams, without Tuesday Lake, the chalk streams of Gray
+et al. (2015) and Thompson et al. (2017) and parasitic and parasitoid links;
+names cleaned and classified (genus to class) as described in
+data-raw/gateway.R. The coefficients of data/size_model.rda were fitted to
+its aquatic webs.
